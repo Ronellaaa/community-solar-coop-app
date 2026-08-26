@@ -45,7 +45,7 @@ export default function TabLayout() {
     >
       {/* ✅ Home Tab (renamed from index to home) */}
       <Tabs.Screen
-        name="home"
+        name="deals"
         options={{
           title: "Deals",
           tabBarLabel: "Deals",
@@ -55,9 +55,9 @@ export default function TabLayout() {
         }}
       />
 
-      {/* ✅ Campaigns Tab (renamed from two to campaigns) */}
+      {/* ✅ Tab 2: My Campaigns (Group Campaigns) */}
       <Tabs.Screen
-        name="campaigns"
+        name="CampaignProfile"
         options={{
           title: "My Campaigns",
           tabBarLabel: "My Campaigns",
@@ -67,7 +67,21 @@ export default function TabLayout() {
         }}
       />
 
+      {/* ✅ Campaigns Tab (renamed from two to campaigns) */}
+      {/*
+      <Tabs.Screen
+        name="campaigns"
+        options={{
+          title: "My Campaigns",
+          tabBarLabel: "My Campaigns",
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size, color }}>📋</Text>
+          ),
+        }}
+      />*/}
+
       {/* ✅ Profile Tab (renamed from three to profile) */}
+      {/*
       <Tabs.Screen
         name="profile"
         options={{
@@ -78,6 +92,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      */}
     </Tabs>
   );
 }

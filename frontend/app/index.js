@@ -19,7 +19,7 @@ export default function IndexScreen() {
 
   // If user is logged in, go to home tab
   if (user) {
-    return <Redirect href="/(tabs)/home" />;
+    return <Redirect href="/(tabs)/deals" />;
   }
 
   // If not logged in, go to login
