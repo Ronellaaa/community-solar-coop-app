@@ -19,10 +19,10 @@ export const useCampaignDetail = (campaignId) => {
     getCampaignWithDetails,
     joinCampaign,
     currentUser,
-    campaigns,
-    campaignMembers,
-    confirmGroup, // ✅ ADD THIS
-    markPaymentStatus, // ✅ ADD THIS
+    confirmGroup,
+    markPaymentStatus,
+    leaveCampaign, // ✅ ADD THIS
+    deleteCampaign,
   } = useCampaigns();
 
   const [campaign, setCampaign] = useState(null);
@@ -48,7 +48,7 @@ export const useCampaignDetail = (campaignId) => {
       }
     };
     loadCampaign();
-  }, [campaignId, campaigns, campaignMembers]);
+  }, [campaignId]);
 
   // ✅ FIXED: handleJoin with async/await and data refresh
   const handleJoin = () => {
@@ -158,7 +158,38 @@ export const useCampaignDetail = (campaignId) => {
     );
   };
 
-  const handleBack = () => router.back();
+  // ✅ NEW: Handle leaving campaign (for organizer when only member)
+  const handleLeaveCampaign = async (campaignId, userId) => {
+    try {
+      const result = await leaveCampaign(campaignId, userId);
+      return result;
+    } catch (error) {
+      console.error("❌ Error leaving campaign:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteCampaign = async (campaignId, userId) => {
+    try {
+      const result = await deleteCampaign(campaignId, userId);
+      return result;
+    } catch (error) {
+      console.error("❌ Error deleting campaign:", error);
+      throw error;
+    }
+  };
+
+  const handleBack = () => {
+    if (campaign?.deal_type_id) {
+      router.replace({
+        pathname: "/(tabs)/features/group-purchasing/CampaignList",
+        params: { dealId: campaign.deal_type_id },
+      });
+      return;
+    }
+
+    router.replace("/(tabs)/deals");
+  };
 
   // Compute values from campaign data
   const target = campaign?.deal?.needed_neighbors || 5;
@@ -189,7 +220,9 @@ export const useCampaignDetail = (campaignId) => {
     statusLabel,
     handleJoin,
     handleBack,
-    confirmGroup, // ✅ ADD THIS
-    markPaymentStatus, // ✅ ADD THIS
+    confirmGroup,
+    markPaymentStatus,
+    leaveCampaign: handleLeaveCampaign, // ✅ ADD THIS
+    deleteCampaign: handleDeleteCampaign,
   };
 };

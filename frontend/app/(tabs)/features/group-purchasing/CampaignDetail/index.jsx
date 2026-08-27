@@ -8,7 +8,8 @@ import {
   View,
   Alert,
   Image,
-} from "react-native"; // ✅ ADDED Image
+  Platform,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCampaignDetail } from "../../../../../hooks/group-purchasing/useCampaignDetail";
 import { SHADOWS } from "../../../../utils/group-purchasing/shadows";
@@ -32,6 +33,7 @@ import {
   Users,
   Crown,
   Send,
+  LogOut,
 } from "lucide-react-native";
 import { campaignDetailStyles as styles } from "./CampaignDetail.styles";
 
@@ -55,10 +57,11 @@ export default function CampaignDetail() {
     statusLabel,
     handleJoin,
     handleBack,
+    confirmGroup,
+    markPaymentStatus,
+    deleteCampaign,
+    leaveCampaign,
   } = useCampaignDetail(campaignId);
-
-  // ✅ Get confirmation and mark payment functions from context
-  const { confirmGroup, markPaymentStatus } = useCampaignDetail(campaignId);
 
   if (!campaign) {
     return (
@@ -98,26 +101,115 @@ export default function CampaignDetail() {
   const discountedPrice = deal.discounted_price || deal.discountedPrice || 0;
   const regularPrice = deal.regular_price || deal.regularPrice || 0;
 
+  // ✅ Check if only organizer is in the campaign
+  const isOnlyOrganizer = isOrganizer && memberCount === 1;
+
+  // ✅ Check if campaign is locked
+  const isLocked = campaign.status === "locked";
+
+  // ✅ Helper: Show confirmation dialog (works on web and mobile)
+  const showConfirm = (title, message, onConfirm, onCancel) => {
+    if (Platform.OS === "web") {
+      if (window.confirm(`${title}\n\n${message}`)) {
+        onConfirm();
+      } else if (onCancel) {
+        onCancel();
+      }
+    } else {
+      Alert.alert(title, message, [
+        { text: "Cancel", style: "cancel", onPress: onCancel },
+        {
+          text: "Confirm",
+          style: "destructive",
+          onPress: onConfirm,
+        },
+      ]);
+    }
+  };
+
+  // ✅ Handler: Leave campaign (for organizer when only member)
+  const handleOrganizerLeaveCampaign = () => {
+    showConfirm(
+      "Delete Campaign",
+      "You are the only member in this campaign. If you leave, the campaign will be permanently deleted.\n\nAre you sure you want to continue?",
+      async () => {
+        try {
+          await deleteCampaign(campaignId, currentUser?.id);
+          if (Platform.OS === "web") {
+            alert("✅ Campaign deleted successfully!");
+          } else {
+            Alert.alert(
+              "✅ Campaign Deleted",
+              "Your campaign has been successfully deleted.",
+            );
+          }
+          router.replace("/(tabs)/CampaignProfile");
+        } catch (error) {
+          console.error("❌ Error deleting campaign:", error);
+          if (Platform.OS === "web") {
+            alert("Failed to delete campaign. Please try again.");
+          } else {
+            Alert.alert(
+              "Error",
+              "Failed to delete campaign. Please try again.",
+            );
+          }
+        }
+      },
+    );
+  };
+
+  // ✅ NEW: Handler: Leave campaign (for regular members)
+  const handleMemberLeaveCampaign = () => {
+    showConfirm(
+      "Leave Campaign",
+      "Are you sure you want to leave this campaign?\n\nYou will lose your spot and will need to rejoin if you change your mind.",
+      async () => {
+        try {
+          await leaveCampaign(campaignId, currentUser?.id);
+          if (Platform.OS === "web") {
+            alert("✅ You have left the campaign!");
+          } else {
+            Alert.alert(
+              "✅ Left Campaign",
+              "You have successfully left the campaign.",
+            );
+          }
+          router.replace("/(tabs)/CampaignProfile");
+        } catch (error) {
+          console.error("❌ Error leaving campaign:", error);
+          if (Platform.OS === "web") {
+            alert("Failed to leave campaign. Please try again.");
+          } else {
+            Alert.alert("Error", "Failed to leave campaign. Please try again.");
+          }
+        }
+      },
+    );
+  };
+
+  // ✅ Helper: Show alert (works on web and mobile)
+  const showAlert = (title, message) => {
+    if (Platform.OS === "web") {
+      alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   // ✅ Handler: Mark member as paid
   const handleMarkPaid = async (memberId) => {
-    Alert.alert(
+    showConfirm(
       "Mark as Paid",
       "Are you sure you want to mark this member as paid?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Yes, Mark Paid",
-          onPress: async () => {
-            try {
-              await markPaymentStatus(campaignId, memberId, "paid");
-              Alert.alert("✅ Success", "Member marked as paid!");
-              // Refresh will happen via context
-            } catch (error) {
-              Alert.alert("Error", "Failed to mark payment status.");
-            }
-          },
-        },
-      ],
+      async () => {
+        try {
+          await markPaymentStatus(campaignId, memberId, "paid");
+          showAlert("✅ Success", "Member marked as paid!");
+        } catch (error) {
+          showAlert("Error", "Failed to mark payment status.");
+        }
+      },
     );
   };
 
@@ -126,40 +218,33 @@ export default function CampaignDetail() {
     // Check if all members have paid
     const allPaid = members.every((member) => member.status === "paid");
     if (!allPaid) {
-      Alert.alert(
+      showAlert(
         "⚠️ Not Ready",
         "All members must pay before confirming the group.",
       );
       return;
     }
 
-    Alert.alert(
+    showConfirm(
       "Confirm Group",
       "Are you ready to lock this campaign and notify the installer?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "✅ Confirm Group",
-          onPress: async () => {
-            try {
-              await confirmGroup(campaignId);
-              Alert.alert(
-                "🎉 Success",
-                "Campaign confirmed! Installer has been notified.",
-              );
-            } catch (error) {
-              Alert.alert("Error", "Failed to confirm group.");
-            }
-          },
-        },
-      ],
+      async () => {
+        try {
+          await confirmGroup(campaignId);
+          showAlert(
+            "🎉 Success",
+            "Campaign confirmed! Installer has been notified.",
+          );
+        } catch (error) {
+          showAlert("Error", "Failed to confirm group.");
+        }
+      },
     );
   };
 
   // ✅ Handler: Share campaign
   const handleShare = () => {
-    // TODO: Implement share functionality
-    Alert.alert("Share", "Share this campaign with your neighbors!");
+    showAlert("Share", "Share this campaign with your neighbors!");
   };
 
   return (
@@ -180,7 +265,6 @@ export default function CampaignDetail() {
           </TouchableOpacity>
         </View>
 
-        {/* ✅ UPDATED: Now shows actual image */}
         <View style={styles.imageContainer}>
           {imageUrl ? (
             <Image
@@ -287,9 +371,12 @@ export default function CampaignDetail() {
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.messageButton}>
-            <MessageCircle size={18} color="#64748B" strokeWidth={2} />
-          </TouchableOpacity>
+          {/* ✅ Hide Message Button for Organizer */}
+          {!isOrganizer && (
+            <TouchableOpacity style={styles.messageButton}>
+              <MessageCircle size={18} color="#64748B" strokeWidth={2} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -408,30 +495,66 @@ export default function CampaignDetail() {
             <Text style={styles.organizerSectionTitle}>Organizer Actions</Text>
           </View>
 
-          {/* Confirm Group Button */}
-          {isFull ? (
+          {/* ✅ Leave Campaign Button (only when organizer is the only member) */}
+          {isOnlyOrganizer ? (
             <TouchableOpacity
-              style={styles.confirmButton}
-              onPress={handleConfirmGroup}
+              style={styles.leaveButton}
+              onPress={handleOrganizerLeaveCampaign}
             >
-              <Sparkles size={20} color="#FFFFFF" strokeWidth={2.5} />
-              <Text style={styles.confirmButtonText}>
-                📦 Confirm Group & Notify Installer
+              <LogOut size={20} color="#EF4444" strokeWidth={2} />
+              <Text style={styles.leaveButtonText}>
+                Leave & Delete Campaign
               </Text>
             </TouchableOpacity>
           ) : (
-            <View style={styles.confirmDisabledContainer}>
-              <Text style={styles.confirmDisabledText}>
-                ⏳ Need {membersNeeded} more member
-                {membersNeeded > 1 ? "s" : ""} to confirm
-              </Text>
-            </View>
-          )}
+            <>
+              {/* Confirm Group Button */}
+              {isFull ? (
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleConfirmGroup}
+                >
+                  <Sparkles size={20} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.confirmButtonText}>
+                    📦 Confirm Group & Notify Installer
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.confirmDisabledContainer}>
+                  <Text style={styles.confirmDisabledText}>
+                    ⏳ Need {membersNeeded} more member
+                    {membersNeeded > 1 ? "s" : ""} to confirm
+                  </Text>
+                </View>
+              )}
 
-          {/* Share Campaign Button */}
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-            <Send size={18} color="#1A5C4A" strokeWidth={2} />
-            <Text style={styles.shareButtonText}>Share Campaign</Text>
+              {/* Share Campaign Button */}
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={handleShare}
+              >
+                <Send size={18} color="#1A5C4A" strokeWidth={2} />
+                <Text style={styles.shareButtonText}>Share Campaign</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      )}
+
+      {/* ✅ NEW: Member Leave Campaign Section */}
+      {isUserMember && !isOrganizer && !isLocked && (
+        <View style={styles.card}>
+          <View style={styles.memberSectionHeader}>
+            <User size={20} color="#EF4444" strokeWidth={2} />
+            <Text style={styles.memberSectionTitle}>Member Actions</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.memberLeaveButton}
+            onPress={handleMemberLeaveCampaign}
+          >
+            <LogOut size={20} color="#EF4444" strokeWidth={2} />
+            <Text style={styles.memberLeaveButtonText}>Leave Campaign</Text>
           </TouchableOpacity>
         </View>
       )}

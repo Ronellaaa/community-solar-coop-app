@@ -506,4 +506,60 @@ export const campaignDetailStyles = StyleSheet.create({
     fontFamily: "Nunito_600SemiBold",
     color: "#1A5C4A",
   },
+  leaveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FEF2F2",
+    paddingVertical: 14,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "#EF4444",
+    gap: 8,
+    marginBottom: 10,
+    ...SHADOWS.button,
+  },
+  leaveButtonText: {
+    fontSize: 16,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#EF4444",
+  },
+
+  // app/(tabs)/features/group-purchasing/CampaignDetail/CampaignDetail.styles.js
+
+  // Add these styles after the existing styles (around line 450, after the leaveButton styles)
+
+  // ============================================================
+  // ✅ MEMBER ACTIONS STYLES
+  // ============================================================
+
+  memberSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  memberSectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: "Nunito_600SemiBold",
+    color: "#EF4444",
+  },
+  memberLeaveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FEF2F2",
+    paddingVertical: 14,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "#EF4444",
+    gap: 8,
+    ...SHADOWS.button,
+  },
+  memberLeaveButtonText: {
+    fontSize: 16,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#EF4444",
+  },
 });

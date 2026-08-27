@@ -11,8 +11,8 @@ export const useCampaigns = () => {
     campaigns,
     getCampaignsForDeal,
     getCampaignWithDetails,
-    getCampaignsLedByUser: contextGetCampaignsLedByUser, // ✅ ADD THIS
-    getCampaignsJoinedByUser: contextGetCampaignsJoinedByUser, // ✅ ADD THIS
+    getCampaignsLedByUser: contextGetCampaignsLedByUser,
+    getCampaignsJoinedByUser: contextGetCampaignsJoinedByUser,
     joinCampaign,
     leaveCampaign,
     confirmGroup,
@@ -20,6 +20,7 @@ export const useCampaigns = () => {
     markPaymentStatus,
     currentUser,
     createCampaign: contextCreateCampaign,
+    deleteCampaign: contextDeleteCampaign, // ✅ ADD THIS
   } = useAppContext();
 
   const getCampaignsForDealWithDetails = async (dealId) => {
@@ -58,7 +59,7 @@ export const useCampaigns = () => {
     }
   };
 
-  // ✅ NEW: Get campaigns where user is the organizer
+  // ✅ Get campaigns where user is the organizer
   const getCampaignsLedByUser = async (userId) => {
     console.log("🔄 getCampaignsLedByUser called with:", userId);
     try {
@@ -75,7 +76,7 @@ export const useCampaigns = () => {
     }
   };
 
-  // ✅ NEW: Get campaigns where user is a member
+  // ✅ Get campaigns where user is a member
   const getCampaignsJoinedByUser = async (userId) => {
     console.log("🔄 getCampaignsJoinedByUser called with:", userId);
     try {
@@ -125,6 +126,19 @@ export const useCampaigns = () => {
     return true;
   };
 
+  // ✅ NEW: Delete campaign (for organizer when only member)
+  const deleteCampaign = async (campaignId, userId) => {
+    console.log("🔄 deleteCampaign called with:", campaignId, userId);
+    try {
+      const result = await contextDeleteCampaign(campaignId, userId);
+      console.log("✅ deleteCampaign completed successfully");
+      return result;
+    } catch (error) {
+      console.error("❌ Error in deleteCampaign:", error);
+      throw error;
+    }
+  };
+
   const createCampaign = async (campaignData) => {
     return await contextCreateCampaign(campaignData);
   };
@@ -135,10 +149,11 @@ export const useCampaigns = () => {
     getCampaignsForDealWithDetails,
     getCampaignWithDetails,
     getCampaignStatus,
-    getCampaignsLedByUser, // ✅ ADD THIS
-    getCampaignsJoinedByUser, // ✅ ADD THIS
+    getCampaignsLedByUser,
+    getCampaignsJoinedByUser,
     joinCampaign: joinCampaignAsCurrentUser,
     leaveCampaign: leaveCampaignAsCurrentUser,
+    deleteCampaign, // ✅ ADD THIS
     confirmGroup,
     markPaymentStatus,
     currentUser,

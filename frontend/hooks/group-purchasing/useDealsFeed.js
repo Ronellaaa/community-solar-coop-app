@@ -50,7 +50,7 @@ export const useDealsFeed = () => {
 
   const handleViewCampaigns = (dealId) => {
     router.push({
-      pathname: "/features/group-purchasing/CampaignList",
+      pathname: "/(tabs)/features/group-purchasing/CampaignList",
       params: { dealId },
     });
   };

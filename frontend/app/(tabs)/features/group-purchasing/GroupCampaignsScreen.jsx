@@ -14,6 +14,7 @@ import { useAppContext } from "../../../../context/AppContext";
 import { useCampaigns } from "../../../../hooks/group-purchasing/useCampaigns";
 import { formatCurrency, formatDate } from "../../../utils/group-purchasing";
 import { SHADOWS } from "../../../utils/group-purchasing/shadows";
+import { ProfileAvatar } from "../../../../components/common";
 
 // 🚀 ICON IMPORTS
 import {
@@ -76,7 +77,7 @@ export default function GroupCampaignsScreen() {
     router.push("/(tabs)/deals");
   };
 
-  const totalCampaigns = leadingCampaigns.length + joinedCampaigns.length;
+  const totalCampaigns = joinedCampaigns.length;
 
   if (loading) {
     return (
@@ -104,16 +105,7 @@ export default function GroupCampaignsScreen() {
               {currentUser?.name || "Community Member"}'s solar journey
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => router.push("/(tabs)/profile")}
-          >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {currentUser?.name?.charAt(0) || "?"}
-              </Text>
-            </View>
-          </TouchableOpacity>
+          <ProfileAvatar size={44} />
         </View>
       </View>
 
@@ -307,23 +299,6 @@ const styles = StyleSheet.create({
     fontFamily: "Nunito_400Regular",
     color: "#94A3B8",
     marginTop: 2,
-  },
-  profileButton: {
-    padding: 4,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#1A5C4A",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarText: {
-    fontSize: 18,
-    fontWeight: "600",
-    fontFamily: "Nunito_600SemiBold",
-    color: "#FFFFFF",
   },
   statsBanner: {
     flexDirection: "row",

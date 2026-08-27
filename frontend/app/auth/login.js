@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
@@ -21,16 +22,26 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      if (Platform.OS === "web") {
+        alert("Please fill in all fields");
+      } else {
+        Alert.alert("Error", "Please fill in all fields");
+      }
       return;
     }
 
     setLoading(true);
     try {
       await signIn(email, password);
-      router.replace("/(tabs)");
+      // ✅ Redirect to Home after successful login
+      router.replace("/(tabs)/home");
     } catch (error) {
-      Alert.alert("Login Failed", error.message);
+      console.error("Login error:", error);
+      if (Platform.OS === "web") {
+        alert(error.message || "Login failed. Please try again.");
+      } else {
+        Alert.alert("Login Failed", error.message || "Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -96,11 +107,13 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "700",
     color: "#1A5C4A",
+    fontFamily: "Nunito_700Bold",
   },
   subtitle: {
     fontSize: 18,
     color: "#64748B",
     marginTop: 8,
+    fontFamily: "Nunito_400Regular",
   },
   form: {
     gap: 16,
@@ -112,6 +125,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
+    fontFamily: "Nunito_400Regular",
   },
   button: {
     backgroundColor: "#1A5C4A",
@@ -127,6 +141,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Nunito_600SemiBold",
   },
   linkButton: {
     alignItems: "center",
@@ -135,5 +150,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#1A5C4A",
     fontSize: 14,
+    fontFamily: "Nunito_400Regular",
   },
 });

@@ -1,7 +1,7 @@
 // hooks/features/group-purchasing/useCampaignList.js
 
-import { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Alert, Platform } from "react-native";
 import { useCampaigns } from "./useCampaigns";
 import { useDeals } from "./useDeals";
@@ -25,29 +25,42 @@ export const useCampaignList = (dealId) => {
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Load data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        console.log("🔄 Loading campaign list for deal:", dealId);
+  // Reload whenever this screen becomes active so changes made in another
+  // screen are reflected when the user returns to the deal.
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-        const dealData = await getDealWithInstaller(dealId);
-        console.log("📦 Deal data:", dealData);
-        setDeal(dealData?.deal || null);
-        setInstaller(dealData?.installer || null);
+      const loadData = async () => {
+        try {
+          setLoading(true);
+          console.log("🔄 Loading campaign list for deal:", dealId);
 
-        const campaignsData = await getCampaignsForDealWithDetails(dealId);
-        console.log("📦 Campaigns data:", campaignsData);
-        setCampaigns(campaignsData || []);
-      } catch (error) {
-        console.error("❌ Error loading data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [dealId]);
+          const dealData = await getDealWithInstaller(dealId);
+          console.log("📦 Deal data:", dealData);
+
+          const campaignsData = await getCampaignsForDealWithDetails(dealId);
+          console.log("📦 Campaigns data:", campaignsData);
+
+          if (isActive) {
+            setDeal(dealData?.deal || null);
+            setInstaller(dealData?.installer || null);
+            setCampaigns(campaignsData || []);
+          }
+        } catch (error) {
+          console.error("❌ Error loading data:", error);
+        } finally {
+          if (isActive) setLoading(false);
+        }
+      };
+
+      loadData();
+
+      return () => {
+        isActive = false;
+      };
+    }, [dealId]),
+  );
 
   // ✅ FIX: Use organizer_id (snake_case) from database
   const userIsLeading = campaigns.some(
@@ -79,7 +92,7 @@ export const useCampaignList = (dealId) => {
         const result = await joinCampaign(campaignId);
         console.log("✅ Join completed from campaign list:", result);
         router.push({
-          pathname: "./CampaignDetail",
+          pathname: "/(tabs)/features/group-purchasing/CampaignDetail",
           params: { campaignId },
         });
       } catch (error) {
@@ -148,7 +161,7 @@ export const useCampaignList = (dealId) => {
       const campaignId = newCampaign?.id || newCampaign;
 
       router.push({
-        pathname: "./CampaignDetail",
+        pathname: "/(tabs)/features/group-purchasing/CampaignDetail",
         params: { campaignId: campaignId },
       });
     } catch (error) {
@@ -159,7 +172,7 @@ export const useCampaignList = (dealId) => {
   };
 
   const handleBack = () => {
-    router.back();
+    router.replace("/(tabs)/deals");
   };
 
   const closeModal = () => {

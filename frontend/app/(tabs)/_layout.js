@@ -3,8 +3,8 @@
 import { Tabs } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { Redirect } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
-import { Text } from "react-native";
+import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { Home, ShoppingBag, Wrench, Zap, BarChart3 } from "lucide-react-native";
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
@@ -28,11 +28,15 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#94A3B8",
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
-          borderTopWidth: 1,
-          borderTopColor: "#E2E8F0",
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
         },
         headerStyle: {
           backgroundColor: "#FFFFFF",
@@ -41,58 +45,124 @@ export default function TabLayout() {
           fontWeight: "600",
           color: "#1E293B",
         },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "500",
+          fontFamily: "Nunito_500Medium",
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+          borderRadius: 12,
+        },
       }}
     >
-      {/* ✅ Home Tab (renamed from index to home) */}
+      {/* Tab 1: Home */}
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Home
+              size={size || 24}
+              color={color}
+              strokeWidth={focused ? 2.5 : 2}
+              fill={focused ? color : "none"}
+            />
+          ),
+        }}
+      />
+
+      {/* Tab 2: Deals */}
       <Tabs.Screen
         name="deals"
         options={{
           title: "Deals",
           tabBarLabel: "Deals",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>🏠</Text>
+          tabBarIcon: ({ color, size, focused }) => (
+            <ShoppingBag
+              size={size || 24}
+              color={color}
+              strokeWidth={focused ? 2.5 : 2}
+            />
           ),
         }}
       />
 
-      {/* ✅ Tab 2: My Campaigns (Group Campaigns) */}
+      {/* Tab 3: Feature 2 */}
+      <Tabs.Screen
+        name="feature2"
+        options={{
+          title: "Feature 2",
+          tabBarLabel: "Feature 2",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Wrench
+              size={size || 24}
+              color={color}
+              strokeWidth={focused ? 2.5 : 2}
+            />
+          ),
+        }}
+      />
+
+      {/* Tab 4: Feature 3 */}
+      <Tabs.Screen
+        name="feature3"
+        options={{
+          title: "Feature 3",
+          tabBarLabel: "Feature 3",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Zap
+              size={size || 24}
+              color={color}
+              strokeWidth={focused ? 2.5 : 2}
+              fill={focused ? color : "none"}
+            />
+          ),
+        }}
+      />
+
+      {/* Tab 5: Feature 4 */}
+      <Tabs.Screen
+        name="feature4"
+        options={{
+          title: "Feature 4",
+          tabBarLabel: "Feature 4",
+          tabBarIcon: ({ color, size, focused }) => (
+            <BarChart3
+              size={size || 24}
+              color={color}
+              strokeWidth={focused ? 2.5 : 2}
+            />
+          ),
+        }}
+      />
+
+      {/* Feature screens are stack routes, not bottom-tab destinations. */}
+      <Tabs.Screen
+        name="features/group-purchasing/DealsFeed"
+        options={{ href: null, title: "Deals" }}
+      />
+      <Tabs.Screen
+        name="features/group-purchasing/CampaignList"
+        options={{ href: null, title: "Campaigns" }}
+      />
+      <Tabs.Screen
+        name="features/group-purchasing/CampaignDetail/index"
+        options={{ href: null, title: "Campaign Detail" }}
+      />
+      <Tabs.Screen
+        name="features/group-purchasing/GroupCampaignsScreen"
+        options={{ href: null, title: "My Campaigns" }}
+      />
+
       <Tabs.Screen
         name="CampaignProfile"
-        options={{
-          title: "My Campaigns",
-          tabBarLabel: "My Campaigns",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>📋</Text>
-          ),
-        }}
+        options={{ href: null, title: "My Campaigns" }}
       />
-
-      {/* ✅ Campaigns Tab (renamed from two to campaigns) */}
-      {/*
-      <Tabs.Screen
-        name="campaigns"
-        options={{
-          title: "My Campaigns",
-          tabBarLabel: "My Campaigns",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>📋</Text>
-          ),
-        }}
-      />*/}
-
-      {/* ✅ Profile Tab (renamed from three to profile) */}
-      {/*
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarLabel: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>👤</Text>
-          ),
-        }}
-      />
-      */}
     </Tabs>
   );
 }

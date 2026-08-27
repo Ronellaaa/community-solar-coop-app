@@ -41,7 +41,7 @@ export const CampaignCard = ({
 
   const isLocked = campaign?.status === "locked";
   const isCompleted = campaign?.status === "completed";
-  const buttonDisabled = isLocked || isCompleted;
+  const buttonDisabled = !isOrganizer && !isMember && (isLocked || isCompleted);
 
   console.log("📌 CampaignCard rendered:", {
     campaignId: campaign?.id,
@@ -56,13 +56,15 @@ export const CampaignCard = ({
 
   // ✅ FIX: Show appropriate button text based on user role
   const getButtonText = () => {
-    if (isLocked || isCompleted) return "Campaign Locked";
+    //if (isLocked || isCompleted) return "Campaign Locked";
     // ✅ If user is organizer OR member, show "View Campaign"
     if (isOrganizer || isMember) return "View Campaign";
+    if (isLocked || isCompleted) return "Campaign Locked";
     if (campaignIsFull) return "Join Waitlist";
     return "Join Campaign";
   };
 
+  // ✅ FIX: Handle button press - different actions for organizer vs member
   // ✅ FIX: Handle button press - different actions for organizer vs member
   const handlePress = () => {
     console.log("🟢 Campaign button pressed:", {
@@ -73,12 +75,20 @@ export const CampaignCard = ({
       isMember,
     });
 
+    // ✅ FIRST: If user is organizer OR member, ALWAYS view campaign
+    // This overrides locked/completed status
+    if (isOrganizer || isMember) {
+      onView(campaign.id);
+      return;
+    }
+
+    // ✅ THEN: For non-members, check if locked/completed
     if (isLocked || isCompleted) {
       Alert.alert("Campaign Locked", "This campaign is no longer active.");
       return;
     }
 
-    if (campaignIsFull && !isOrganizer && !isMember) {
+    if (campaignIsFull) {
       Alert.alert(
         "Campaign Full",
         "This campaign has reached its member limit.",
@@ -86,19 +96,15 @@ export const CampaignCard = ({
       return;
     }
 
-    // ✅ If user is organizer OR member, view campaign
-    if (isOrganizer || isMember) {
-      onView(campaign.id);
-    } else {
-      // ✅ Regular non-member: Join campaign
-      onJoin(campaign);
-    }
+    // ✅ Regular non-member: Join campaign
+    onJoin(campaign);
   };
 
   const getButtonStyle = () => {
-    if (isLocked || isCompleted) return styles.joinButtonLocked;
+    //if (isLocked || isCompleted) return styles.joinButtonLocked;
     // ✅ Blue style for both organizer AND member
     if (isOrganizer || isMember) return styles.viewButton;
+    if (isLocked || isCompleted) return styles.joinButtonLocked;
     if (campaignIsFull) return styles.joinButtonDisabled;
     return styles.joinButton;
   };

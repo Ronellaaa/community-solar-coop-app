@@ -2,10 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { campaignService } from "../services/group-purchasing/campaignService";
+import { useAuth } from "./AuthContext";
 
 const AppContext = createContext(undefined);
 
 export const AppProvider = ({ children }) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,9 +45,10 @@ export const AppProvider = ({ children }) => {
       setUsers(usersData || []);
       setCampaignMembers(membersData || []);
 
-      if (usersData && usersData.length > 0) {
-        setCurrentUser(usersData[0]);
-      }
+      const authenticatedUser = usersData?.find(
+        (profile) => profile.id === user?.id,
+      );
+      setCurrentUser(authenticatedUser || null);
 
       console.log("✅ Data loaded successfully!");
     } catch (err) {
@@ -57,8 +60,9 @@ export const AppProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    setCurrentUser(null);
     loadAllData();
-  }, []);
+  }, [user?.id]);
 
   // ==================== HELPER FUNCTIONS ====================
 
@@ -70,7 +74,6 @@ export const AppProvider = ({ children }) => {
     const result = await campaignService.getCampaignWithDetails(campaignId);
     console.log("📦 AppContext: getCampaignWithDetails result:", result);
 
-    // ✅ Log the structure to see what's coming back
     if (result) {
       console.log("📦 Campaign keys:", Object.keys(result));
       console.log("📦 Deal:", result.deal);
@@ -119,6 +122,23 @@ export const AppProvider = ({ children }) => {
     );
     await campaignService.leaveCampaign(campaignId, userId);
     await loadAllData();
+  };
+
+  // ✅ NEW: Delete campaign (for organizer when only member)
+  const deleteCampaign = async (campaignId, userId) => {
+    console.log(
+      "🔄 AppContext: deleteCampaign called with:",
+      campaignId,
+      userId,
+    );
+    try {
+      const result = await campaignService.deleteCampaign(campaignId, userId);
+      await loadAllData();
+      return result;
+    } catch (error) {
+      console.error("❌ Error deleting campaign:", error);
+      throw error;
+    }
   };
 
   const confirmGroup = async (campaignId) => {
@@ -171,6 +191,7 @@ export const AppProvider = ({ children }) => {
     getCampaignsJoinedByUser,
     joinCampaign,
     leaveCampaign,
+    deleteCampaign, // ✅ ADD THIS
     confirmGroup,
     markPaymentStatus,
     createCampaign,

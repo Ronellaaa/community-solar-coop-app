@@ -270,7 +270,8 @@ export const campaignService = {
         `
       *,
       deal:deal_type_id (
-        title
+        title,
+        needed_neighbors 
       )
     `,
       )
@@ -326,7 +327,8 @@ export const campaignService = {
         `
       *,
       deal:deal_type_id (
-        title
+        title,
+        needed_neighbors 
       )
     `,
       )
@@ -516,6 +518,87 @@ export const campaignService = {
     return { success: true };
   },
 
+  // ============================================================
+  // DELETE CAMPAIGN
+  // ============================================================
+  async deleteCampaign(campaignId, userId) {
+    console.log(
+      "🔄 [campaignService] deleteCampaign called with:",
+      campaignId,
+      userId,
+    );
+
+    try {
+      // Step 1: Fetch campaign to verify ownership and status
+      const { data: campaign, error: fetchError } = await supabase
+        .from("campaigns")
+        .select("id, organizer_id, current_members, status")
+        .eq("id", campaignId)
+        .single();
+
+      if (fetchError) {
+        console.error(
+          "❌ [campaignService] Error fetching campaign:",
+          fetchError,
+        );
+        throw new Error("Campaign not found");
+      }
+
+      // ✅ App-level security checks (since RLS is disabled)
+      // 1. Verify user is the organizer
+      if (campaign.organizer_id !== userId) {
+        throw new Error("You are not authorized to delete this campaign");
+      }
+
+      // 2. Only allow deletion if campaign is 'active'
+      if (campaign.status !== "active") {
+        throw new Error("Cannot delete a campaign that is locked or completed");
+      }
+
+      // 3. Only allow deletion if only 1 member (the organizer)
+      if (campaign.current_members > 1) {
+        throw new Error("Cannot delete a campaign with multiple members");
+      }
+
+      console.log("✅ [campaignService] Security checks passed");
+
+      // Step 2: Delete from campaign_members
+      const { error: membersError } = await supabase
+        .from("campaign_members")
+        .delete()
+        .eq("campaign_id", campaignId);
+
+      if (membersError) {
+        console.error(
+          "❌ [campaignService] Error deleting campaign members:",
+          membersError,
+        );
+        throw membersError;
+      }
+      console.log("✅ [campaignService] Campaign members deleted");
+
+      // Step 3: Delete the campaign
+      const { error: campaignError } = await supabase
+        .from("campaigns")
+        .delete()
+        .eq("id", campaignId);
+
+      if (campaignError) {
+        console.error(
+          "❌ [campaignService] Error deleting campaign:",
+          campaignError,
+        );
+        throw campaignError;
+      }
+
+      console.log("✅ [campaignService] Campaign deleted successfully");
+      return { success: true };
+    } catch (error) {
+      console.error("❌ [campaignService] deleteCampaign error:", error);
+      throw error;
+    }
+  },
+
   // ✅ FIXED: createCampaign - starts at 0, joinCampaign increments to 1
   async createCampaign(data) {
     console.log("🔄 [campaignService] createCampaign called with:", data);
@@ -526,7 +609,7 @@ export const campaignService = {
         deal_type_id: data.dealTypeId,
         organizer_id: data.organizerId,
         status: "active",
-        current_members: 0, // ✅ Start at 0
+        current_members: 0,
         deadline: data.deadline,
       })
       .select()
@@ -534,10 +617,8 @@ export const campaignService = {
 
     if (campaignError) throw campaignError;
 
-    // ✅ This increments current_members from 0 to 1
     await this.joinCampaign(campaign.id, data.organizerId);
 
-    // ✅ Return ONLY the campaign ID as a string
     return campaign.id;
   },
 

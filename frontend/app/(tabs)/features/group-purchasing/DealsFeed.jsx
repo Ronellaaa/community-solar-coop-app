@@ -5,9 +5,10 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { DealCard } from "../../../../components/group-purchasing/DealCard";
 import { useDealsFeed } from "../../../../hooks/group-purchasing/useDealsFeed";
 import { SHADOWS } from "../../../utils/group-purchasing/shadows";
+import { ProfileAvatar } from "../../../../components/common";
 
 // 🚀 MODERN ICON IMPORTS
-import { Bell, Flame } from "lucide-react-native";
+import { Flame } from "lucide-react-native";
 
 export default function DealsFeed() {
   const { deals, loading, stats, handleViewCampaigns } = useDealsFeed();
@@ -35,10 +36,7 @@ export default function DealsFeed() {
               Find the best solar deals together
             </Text>
           </View>
-          <View style={styles.notificationBadge}>
-            <Bell size={24} color="#1E293B" strokeWidth={2} />
-            <View style={styles.notificationDot} />
-          </View>
+          <ProfileAvatar size={44} />
         </View>
       </View>
 
@@ -135,21 +133,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontWeight: "400",
     letterSpacing: 0.3,
-  },
-  notificationBadge: {
-    position: "relative",
-    padding: 4,
-  },
-  notificationDot: {
-    position: "absolute",
-    top: 4,
-    right: 4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#F97316",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
   },
   statsBanner: {
     flexDirection: "row",
