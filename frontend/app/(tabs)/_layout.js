@@ -120,9 +120,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="feature2"
         options={{
-          title: "Feature 2",
-          tabBarLabel: "Feature 2",
-
+          title: "Energy Monitoring Dashboard",
+          tabBarLabel: "Energy",
           tabBarIcon: ({ color, size, focused }) => (
             <Wrench
               size={size || 24}
@@ -295,7 +294,27 @@ export default function TabLayout() {
           title: "Create Solar Project",
         }}
       />
-      
+
+      {/* Feature screens are stack routes, not bottom-tab destinations. */}
+      <Tabs.Screen
+        name="features/energy-monitoring/index"
+        options={{ href: null, title: "Energy Monitoring Dashboard" }}
+      />
+
+      <Tabs.Screen
+        name="features/energy-monitoring/insights"
+        options={{ href: null, title: "Energy Monitoring Insights" }}
+      />
+
+      <Tabs.Screen
+        name="features/energy-monitoring/savings"
+        options={{ href: null, title: "Energy Monitoring Savings" }}
+      />
+
+      <Tabs.Screen
+        name="features/energy-monitoring/usage"
+        options={{ href: null, title: "Energy Monitoring Usage" }}
+      />
     </Tabs>
   );
 }
