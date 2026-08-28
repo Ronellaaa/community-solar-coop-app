@@ -3,13 +3,7 @@
 import { Tabs, Redirect } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
-import {
-  Home,
-  ShoppingBag,
-  Wrench,
-  Zap,
-  Sun,
-} from "lucide-react-native";
+import { Home, ShoppingBag, Wrench, Zap, Sun } from "lucide-react-native";
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
@@ -150,20 +144,20 @@ export default function TabLayout() {
         }}
       />
 
-    <Tabs.Screen
+      <Tabs.Screen
         name="Dashboard"
         options={{
-        title: "Dashboard",
-        tabBarLabel: "Dashboard",
-        tabBarIcon: ({ color, size, focused }) => (
-       <Sun
-        size={size || 24}
-        color={color}
-        strokeWidth={focused ? 2.5 : 2}
+          title: "Dashboard",
+          tabBarLabel: "Dashboard",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Sun
+              size={size || 24}
+              color={color}
+              strokeWidth={focused ? 2.5 : 2}
+            />
+          ),
+        }}
       />
-     ),
-   }}
- />
 
       {/* =====================================================
           GROUP PURCHASING FEATURE SCREENS
@@ -314,6 +308,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="features/energy-monitoring/usage"
         options={{ href: null, title: "Energy Monitoring Usage" }}
+      />
+
+      <Tabs.Screen
+        name="AdminDashboard"
+        options={{
+          href: null,
+          title: "Solar Admin Dashboard",
+        }}
       />
     </Tabs>
   );
