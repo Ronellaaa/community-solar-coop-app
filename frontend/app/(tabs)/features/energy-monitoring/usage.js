@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import UsageChart from "../../components/energy-monitoring/usage-chart";
+import UsageChart from "../../../../components/energy-monitoring/usage-chart";
 import {
   View,
   Text,
@@ -177,7 +177,6 @@ export default function UsageScreen() {
           </View>
         </View>
         <Text style={styles.sectionTitle}>Usage Pattern</Text>
-
 
         <View style={{ height: 30 }} />
       </ScrollView>

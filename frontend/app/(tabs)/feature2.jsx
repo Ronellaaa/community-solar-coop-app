@@ -1,9 +1,14 @@
+import EnergyMonitoringScreen from "./features/energy-monitoring/index";
+
+export default function feature2() {
+  return <EnergyMonitoringScreen />;
+}
+
 // // frontend/app/(tabs)/feature2.jsx
 
 // import React from "react";
 // import { View, Text, StyleSheet } from "react-native";
 // import { SHADOWS } from "../utils/group-purchasing/shadows";
-
 
 // export default function Feature2Screen() {
 //   return (

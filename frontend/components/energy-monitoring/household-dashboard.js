@@ -60,7 +60,9 @@ export default function HouseholdDashboard() {
         <SavingsCard todaySavings="420" monthlySavings="3,850" />
         <TouchableOpacity
           style={styles.detailsButton}
-          onPress={() => router.push("/energy-monitoring/savings")}
+          onPress={() =>
+            router.push("/(tabs)/features/energy-monitoring/savings")
+          }
         >
           <Text style={styles.detailsButtonText}>View Bill & Savings</Text>
         </TouchableOpacity>
@@ -72,7 +74,9 @@ export default function HouseholdDashboard() {
         />
         <TouchableOpacity
           style={styles.detailsButton}
-          onPress={() => router.push("/energy-monitoring/insights")}
+          onPress={() =>
+            router.push("/(tabs)/features/energy-monitoring/insights")
+          }
         >
           <Text style={styles.detailsButtonText}>View Energy Insights</Text>
         </TouchableOpacity>
@@ -87,7 +91,9 @@ export default function HouseholdDashboard() {
         />
         <TouchableOpacity
           style={styles.detailsButton}
-          onPress={() => router.push("/energy-monitoring/usage")}
+          onPress={() =>
+            router.push("/(tabs)/features/energy-monitoring/usage")
+          }
         >
           <Text style={styles.detailsButtonText}>View Energy Details</Text>
         </TouchableOpacity>
