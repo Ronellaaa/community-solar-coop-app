@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import BottomNav from "../../components/solar-investment/BottomNav";
+import BottomNav from "../../../../components/solar-investment/BottomNav";
 
 export default function EarningsHistoryScreen() {
   const monthlyEarnings = [
@@ -29,7 +29,7 @@ export default function EarningsHistoryScreen() {
       location: "Kandy",
       earnings: 420,
       percentage: "67.7%",
-      image: require("../../assets/images/greenfield-school.jpeg"),
+      image: require("../../../../assets/images/greenfield-school.jpeg"),
     },
     {
       id: 2,
@@ -37,7 +37,7 @@ export default function EarningsHistoryScreen() {
       location: "Galle",
       earnings: 200,
       percentage: "32.3%",
-      image: require("../../assets/images/sudarshana-temple.jpeg"),
+      image: require("../../../../assets/images/sudarshana-temple.jpeg"),
     },
   ];
 
@@ -62,29 +62,19 @@ export default function EarningsHistoryScreen() {
           {/* Total Earnings */}
           <View style={styles.totalCard}>
             <View>
-              <Text style={styles.totalLabel}>
-                Total Earnings (All Time)
-              </Text>
+              <Text style={styles.totalLabel}>Total Earnings (All Time)</Text>
 
               <Text style={styles.totalValue}>Rs. 2,340</Text>
             </View>
 
-            <Ionicons
-              name="cash-outline"
-              size={42}
-              color="#238636"
-            />
+            <Ionicons name="cash-outline" size={42} color="#238636" />
           </View>
 
           {/* Monthly Earnings Chart */}
           <View style={styles.chartCard}>
-            <Text style={styles.sectionTitle}>
-              Earnings Overview
-            </Text>
+            <Text style={styles.sectionTitle}>Earnings Overview</Text>
 
-            <Text style={styles.chartSubtitle}>
-              Monthly earnings
-            </Text>
+            <Text style={styles.chartSubtitle}>Monthly earnings</Text>
 
             <View style={styles.chart}>
               {monthlyEarnings.map((item) => {
@@ -92,9 +82,7 @@ export default function EarningsHistoryScreen() {
 
                 return (
                   <View key={item.month} style={styles.barItem}>
-                    <Text style={styles.barValue}>
-                      {item.value}
-                    </Text>
+                    <Text style={styles.barValue}>{item.value}</Text>
 
                     <View style={styles.barArea}>
                       <View
@@ -107,9 +95,7 @@ export default function EarningsHistoryScreen() {
                       />
                     </View>
 
-                    <Text style={styles.month}>
-                      {item.month}
-                    </Text>
+                    <Text style={styles.month}>{item.month}</Text>
                   </View>
                 );
               })}
@@ -118,29 +104,18 @@ export default function EarningsHistoryScreen() {
 
           {/* Earnings by Project */}
           <View style={styles.projectSection}>
-            <Text style={styles.sectionTitle}>
-              Earnings by Project
-            </Text>
+            <Text style={styles.sectionTitle}>Earnings by Project</Text>
 
-            <Text style={styles.projectSubtitle}>
-              May 2026
-            </Text>
+            <Text style={styles.projectSubtitle}>May 2026</Text>
 
             {projects.map((project) => (
               <View key={project.id} style={styles.projectRow}>
-                <Image
-                  source={project.image}
-                  style={styles.projectImage}
-                />
+                <Image source={project.image} style={styles.projectImage} />
 
                 <View style={styles.projectInfo}>
-                  <Text style={styles.projectName}>
-                    {project.name}
-                  </Text>
+                  <Text style={styles.projectName}>{project.name}</Text>
 
-                  <Text style={styles.location}>
-                    {project.location}
-                  </Text>
+                  <Text style={styles.location}>{project.location}</Text>
                 </View>
 
                 <View style={styles.earningsInfo}>
@@ -148,9 +123,7 @@ export default function EarningsHistoryScreen() {
                     Rs. {project.earnings}
                   </Text>
 
-                  <Text style={styles.percentage}>
-                    {project.percentage}
-                  </Text>
+                  <Text style={styles.percentage}>{project.percentage}</Text>
                 </View>
               </View>
             ))}
@@ -159,17 +132,11 @@ export default function EarningsHistoryScreen() {
           {/* Summary */}
           <View style={styles.summaryCard}>
             <View style={styles.summaryIcon}>
-              <Ionicons
-                name="trending-up"
-                size={22}
-                color="#238636"
-              />
+              <Ionicons name="trending-up" size={22} color="#238636" />
             </View>
 
             <View style={styles.summaryContent}>
-              <Text style={styles.summaryTitle}>
-                Your earnings are growing
-              </Text>
+              <Text style={styles.summaryTitle}>Your earnings are growing</Text>
 
               <Text style={styles.summaryText}>
                 You earned Rs. 620 this month from your solar investments.

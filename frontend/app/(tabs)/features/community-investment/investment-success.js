@@ -31,7 +31,7 @@ export default function InvestmentSuccessScreen() {
         </View>
 
         <Image
-          source={require("../../assets/images/greenfield-school.jpeg")}
+          source={require("../../../../assets/images/greenfield-school.jpeg")}
           style={styles.image}
         />
 
@@ -44,9 +44,7 @@ export default function InvestmentSuccessScreen() {
         <View style={styles.summaryCard}>
           <View style={styles.row}>
             <Text style={styles.label}>Project</Text>
-            <Text style={styles.value}>
-              Greenfield School Solar Project
-            </Text>
+            <Text style={styles.value}>Greenfield School Solar Project</Text>
           </View>
 
           <View style={styles.divider} />
@@ -60,9 +58,7 @@ export default function InvestmentSuccessScreen() {
 
           <View style={styles.row}>
             <Text style={styles.label}>Total Invested</Text>
-            <Text style={styles.greenValue}>
-              Rs. {amount.toLocaleString()}
-            </Text>
+            <Text style={styles.greenValue}>Rs. {amount.toLocaleString()}</Text>
           </View>
 
           <View style={styles.divider} />
@@ -87,23 +83,21 @@ export default function InvestmentSuccessScreen() {
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() =>
-            router.replace("/community-investment/my-investments")
+            router.replace(
+              "/(tabs)/features/community-investment/my-investments",
+            )
           }
         >
-          <Text style={styles.primaryButtonText}>
-            View My Portfolio
-          </Text>
+          <Text style={styles.primaryButtonText}>View My Portfolio</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() =>
-            router.replace("/community-investment")
+            router.replace("/(tabs)/features/community-investment")
           }
         >
-          <Text style={styles.secondaryButtonText}>
-            Browse More Projects
-          </Text>
+          <Text style={styles.secondaryButtonText}>Browse More Projects</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

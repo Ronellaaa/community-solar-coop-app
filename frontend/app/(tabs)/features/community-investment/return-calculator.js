@@ -48,9 +48,7 @@ export default function ReturnCalculatorScreen() {
             <Ionicons name="arrow-back" size={25} color="#111" />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>
-            Estimated Returns
-          </Text>
+          <Text style={styles.headerTitle}>Estimated Returns</Text>
 
           <View style={{ width: 25 }} />
         </View>
@@ -61,47 +59,31 @@ export default function ReturnCalculatorScreen() {
         >
           {/* Project Info */}
           <View style={styles.projectCard}>
-            <Text style={styles.projectLabel}>
-              You're investing in
-            </Text>
+            <Text style={styles.projectLabel}>You're investing in</Text>
 
             <Text style={styles.projectTitle}>
               Greenfield School Solar Project
             </Text>
 
             <View style={styles.locationRow}>
-              <Ionicons
-                name="location-outline"
-                size={16}
-                color="#238636"
-              />
+              <Ionicons name="location-outline" size={16} color="#238636" />
 
-              <Text style={styles.location}>
-                Kandy, Central Province
-              </Text>
+              <Text style={styles.location}>Kandy, Central Province</Text>
             </View>
           </View>
 
           {/* Share Selection */}
           <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>
-              Number of Shares
-            </Text>
+            <Text style={styles.sectionTitle}>Number of Shares</Text>
 
-            <Text style={styles.helperText}>
-              Each share costs Rs. 1,000
-            </Text>
+            <Text style={styles.helperText}>Each share costs Rs. 1,000</Text>
 
             <View style={styles.counterRow}>
               <TouchableOpacity
                 style={styles.counterButton}
                 onPress={decreaseShares}
               >
-                <Ionicons
-                  name="remove"
-                  size={22}
-                  color="#238636"
-                />
+                <Ionicons name="remove" size={22} color="#238636" />
               </TouchableOpacity>
 
               <TextInput
@@ -118,18 +100,12 @@ export default function ReturnCalculatorScreen() {
                 style={styles.counterButton}
                 onPress={increaseShares}
               >
-                <Ionicons
-                  name="add"
-                  size={22}
-                  color="#238636"
-                />
+                <Ionicons name="add" size={22} color="#238636" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.investmentRow}>
-              <Text style={styles.investmentLabel}>
-                Investment Amount
-              </Text>
+              <Text style={styles.investmentLabel}>Investment Amount</Text>
 
               <Text style={styles.investmentValue}>
                 Rs. {investmentAmount.toLocaleString()}
@@ -140,16 +116,10 @@ export default function ReturnCalculatorScreen() {
           {/* Return Summary */}
           <View style={styles.returnCard}>
             <View style={styles.returnIcon}>
-              <Ionicons
-                name="trending-up"
-                size={28}
-                color="#238636"
-              />
+              <Ionicons name="trending-up" size={28} color="#238636" />
             </View>
 
-            <Text style={styles.returnTitle}>
-              Estimated Annual Return
-            </Text>
+            <Text style={styles.returnTitle}>Estimated Annual Return</Text>
 
             <Text style={styles.returnValue}>
               Rs. {estimatedAnnualReturn.toLocaleString()}
@@ -162,42 +132,30 @@ export default function ReturnCalculatorScreen() {
 
           {/* Breakdown */}
           <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>
-              Estimated Earnings
-            </Text>
+            <Text style={styles.sectionTitle}>Estimated Earnings</Text>
 
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>
-                Monthly
-              </Text>
+              <Text style={styles.breakdownLabel}>Monthly</Text>
 
               <Text style={styles.breakdownValue}>
-                Rs. {Math.round(
-                  estimatedMonthlyReturn
-                ).toLocaleString()}
+                Rs. {Math.round(estimatedMonthlyReturn).toLocaleString()}
               </Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>
-                Yearly
-              </Text>
+              <Text style={styles.breakdownLabel}>Yearly</Text>
 
               <Text style={styles.breakdownValue}>
-                Rs. {Math.round(
-                  estimatedAnnualReturn
-                ).toLocaleString()}
+                Rs. {Math.round(estimatedAnnualReturn).toLocaleString()}
               </Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>
-                Investment
-              </Text>
+              <Text style={styles.breakdownLabel}>Investment</Text>
 
               <Text style={styles.breakdownValue}>
                 Rs. {investmentAmount.toLocaleString()}
@@ -214,9 +172,8 @@ export default function ReturnCalculatorScreen() {
             />
 
             <Text style={styles.noticeText}>
-              Returns are estimates only. Actual earnings may
-              vary depending on solar production and project
-              performance.
+              Returns are estimates only. Actual earnings may vary depending on
+              solar production and project performance.
             </Text>
           </View>
 
@@ -230,7 +187,7 @@ export default function ReturnCalculatorScreen() {
             onPress={() =>
               router.push({
                 pathname:
-                  "/community-investment/purchase-shares",
+                  "/(tabs)/features/community-investment/purchase-shares",
                 params: {
                   shares: numberOfShares,
                   amount: investmentAmount,
@@ -238,9 +195,7 @@ export default function ReturnCalculatorScreen() {
               })
             }
           >
-            <Text style={styles.continueButtonText}>
-              Continue to Purchase
-            </Text>
+            <Text style={styles.continueButtonText}>Continue to Purchase</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>

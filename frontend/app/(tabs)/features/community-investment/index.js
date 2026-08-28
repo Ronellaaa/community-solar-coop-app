@@ -10,9 +10,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-import ProjectCard from "../../components/solar-investment/ProjectCard";
-import BottomNav from "../../components/solar-investment/BottomNav";
-import { supabase } from "../../services/supabase";
+import ProjectCard from "../../../../components/solar-investment/ProjectCard";
+import BottomNav from "../../../../components/solar-investment/BottomNav";
+import { supabase } from "../../../../services/supabase";
 
 export default function CommunityProjectsScreen() {
   const router = useRouter();
@@ -53,28 +53,20 @@ export default function CommunityProjectsScreen() {
           <Ionicons name="menu-outline" size={28} color="#111" />
 
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>
-              Community Projects
-            </Text>
+            <Text style={styles.headerTitle}>Community Projects</Text>
 
             <Text style={styles.headerSubtitle}>
               Invest in shared solar. Power our community.
             </Text>
           </View>
 
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color="#111"
-          />
+          <Ionicons name="notifications-outline" size={24} color="#111" />
         </View>
 
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#238636" />
-            <Text style={styles.loadingText}>
-              Loading projects...
-            </Text>
+            <Text style={styles.loadingText}>Loading projects...</Text>
           </View>
         ) : (
           <ScrollView
@@ -90,16 +82,14 @@ export default function CommunityProjectsScreen() {
                 funded={Math.round(
                   (Number(project.raised_amount) /
                     Number(project.target_amount)) *
-                    100
+                    100,
                 )}
-                target={Number(
-                  project.target_amount
-                ).toLocaleString()}
-                image={require("../../assets/images/greenfield-school.jpeg")}
+                target={Number(project.target_amount).toLocaleString()}
+                image={require("../../../../assets/images/greenfield-school.jpeg")}
                 onPress={() =>
                   router.push({
                     pathname:
-                      "/community-investment/project-details",
+                      "/(tabs)/features/community-investment/project-details",
                     params: {
                       id: project.id,
                     },
@@ -109,14 +99,12 @@ export default function CommunityProjectsScreen() {
             ))}
 
             {projects.length === 0 && (
-              <Text style={styles.emptyText}>
-                No solar projects available.
-              </Text>
+              <Text style={styles.emptyText}>No solar projects available.</Text>
             )}
           </ScrollView>
         )}
 
-        <BottomNav active="projects" />
+        {/* <BottomNav active="projects" /> */}
       </View>
     </SafeAreaView>
   );

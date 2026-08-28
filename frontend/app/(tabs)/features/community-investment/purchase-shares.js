@@ -92,7 +92,7 @@ export default function PurchaseSharesScreen() {
 
             <View style={styles.projectRow}>
               <Image
-                source={require("../../assets/images/greenfield-school.jpeg")}
+                source={require("../../../../assets/images/greenfield-school.jpeg")}
                 style={styles.projectImage}
               />
 
@@ -102,15 +102,9 @@ export default function PurchaseSharesScreen() {
                 </Text>
 
                 <View style={styles.locationRow}>
-                  <Ionicons
-                    name="location"
-                    size={14}
-                    color="#238636"
-                  />
+                  <Ionicons name="location" size={14} color="#238636" />
 
-                  <Text style={styles.location}>
-                    Kandy, Central Province
-                  </Text>
+                  <Text style={styles.location}>Kandy, Central Province</Text>
                 </View>
               </View>
             </View>
@@ -144,10 +138,7 @@ export default function PurchaseSharesScreen() {
             return (
               <TouchableOpacity
                 key={option.id}
-                style={[
-                  styles.paymentCard,
-                  selected && styles.selectedPayment,
-                ]}
+                style={[styles.paymentCard, selected && styles.selectedPayment]}
                 onPress={() => setPaymentMethod(option.id)}
               >
                 <View style={styles.radioOuter}>
@@ -172,9 +163,7 @@ export default function PurchaseSharesScreen() {
                     {option.title}
                   </Text>
 
-                  <Text style={styles.paymentSubtitle}>
-                    {option.subtitle}
-                  </Text>
+                  <Text style={styles.paymentSubtitle}>{option.subtitle}</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -209,7 +198,7 @@ export default function PurchaseSharesScreen() {
             onPress={() =>
               router.push({
                 pathname:
-                  "/community-investment/investment-success",
+                  "/(tabs)/features/community-investment/investment-success",
                 params: {
                   shares,
                   amount,
@@ -218,9 +207,7 @@ export default function PurchaseSharesScreen() {
               })
             }
           >
-            <Text style={styles.confirmButtonText}>
-              Proceed to Confirm
-            </Text>
+            <Text style={styles.confirmButtonText}>Proceed to Confirm</Text>
           </TouchableOpacity>
 
           <Text style={styles.secureText}>

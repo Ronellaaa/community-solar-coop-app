@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-import ProgressBar from "../../components/solar-investment/ProgressBar";
+import ProgressBar from "../../../../components/solar-investment/ProgressBar";
 
 export default function FundingProgressScreen() {
   const router = useRouter();
@@ -38,34 +38,24 @@ export default function FundingProgressScreen() {
             Greenfield School Solar Project
           </Text>
 
-          <Text style={styles.location}>
-            Kandy, Central Province
-          </Text>
+          <Text style={styles.location}>Kandy, Central Province</Text>
 
           {/* Main Progress Card */}
           <View style={styles.progressCard}>
             <Text style={styles.progressBig}>68%</Text>
             <Text style={styles.progressLabel}>Funded</Text>
 
-            <ProgressBar
-              progress={68}
-              raised={1360000}
-              target={2000000}
-            />
+            <ProgressBar progress={68} raised={1360000} target={2000000} />
 
             <View style={styles.amountRow}>
               <View>
                 <Text style={styles.amountLabel}>Raised</Text>
-                <Text style={styles.amountValue}>
-                  Rs. 1,360,000
-                </Text>
+                <Text style={styles.amountValue}>Rs. 1,360,000</Text>
               </View>
 
               <View style={styles.rightAmount}>
                 <Text style={styles.amountLabel}>Target</Text>
-                <Text style={styles.amountValue}>
-                  Rs. 2,000,000
-                </Text>
+                <Text style={styles.amountValue}>Rs. 2,000,000</Text>
               </View>
             </View>
           </View>
@@ -73,41 +63,25 @@ export default function FundingProgressScreen() {
           {/* Stats */}
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
-              <Ionicons
-                name="people-outline"
-                size={25}
-                color="#238636"
-              />
+              <Ionicons name="people-outline" size={25} color="#238636" />
               <Text style={styles.statValue}>128</Text>
               <Text style={styles.statLabel}>Investors</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Ionicons
-                name="time-outline"
-                size={25}
-                color="#238636"
-              />
+              <Ionicons name="time-outline" size={25} color="#238636" />
               <Text style={styles.statValue}>24</Text>
               <Text style={styles.statLabel}>Days Left</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Ionicons
-                name="layers-outline"
-                size={25}
-                color="#238636"
-              />
+              <Ionicons name="layers-outline" size={25} color="#238636" />
               <Text style={styles.statValue}>2,000</Text>
               <Text style={styles.statLabel}>Total Shares</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Ionicons
-                name="cash-outline"
-                size={25}
-                color="#238636"
-              />
+              <Ionicons name="cash-outline" size={25} color="#238636" />
               <Text style={styles.statValue}>Rs. 1,000</Text>
               <Text style={styles.statLabel}>Per Share</Text>
             </View>
@@ -115,42 +89,28 @@ export default function FundingProgressScreen() {
 
           {/* Funding Information */}
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>
-              Funding Information
-            </Text>
+            <Text style={styles.infoTitle}>Funding Information</Text>
 
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>
-                Remaining Amount
-              </Text>
+              <Text style={styles.infoLabel}>Remaining Amount</Text>
 
-              <Text style={styles.infoValue}>
-                Rs. 640,000
-              </Text>
+              <Text style={styles.infoValue}>Rs. 640,000</Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>
-                Shares Remaining
-              </Text>
+              <Text style={styles.infoLabel}>Shares Remaining</Text>
 
-              <Text style={styles.infoValue}>
-                640 shares
-              </Text>
+              <Text style={styles.infoValue}>640 shares</Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>
-                Expected Completion
-              </Text>
+              <Text style={styles.infoLabel}>Expected Completion</Text>
 
-              <Text style={styles.infoValue}>
-                30 Nov 2025
-              </Text>
+              <Text style={styles.infoValue}>30 Nov 2025</Text>
             </View>
           </View>
 
@@ -158,12 +118,12 @@ export default function FundingProgressScreen() {
           <TouchableOpacity
             style={styles.investButton}
             onPress={() =>
-              router.push("/community-investment/return-calculator")
+              router.push(
+                "/(tabs)/features/community-investment/return-calculator",
+              )
             }
           >
-            <Text style={styles.investButtonText}>
-              Calculate My Returns
-            </Text>
+            <Text style={styles.investButtonText}>Calculate My Returns</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>

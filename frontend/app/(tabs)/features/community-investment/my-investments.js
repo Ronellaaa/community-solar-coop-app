@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import BottomNav from "../../components/solar-investment/BottomNav";
+import BottomNav from "../../../../components/solar-investment/BottomNav";
 
 export default function MyInvestmentsScreen() {
   const investments = [
@@ -22,7 +22,7 @@ export default function MyInvestmentsScreen() {
       ownership: "1.00%",
       annualReturn: 2400,
       status: "Active",
-      image: require("../../assets/images/greenfield-school.jpeg"),
+      image: require("../../../../assets/images/greenfield-school.jpeg"),
     },
     {
       id: 2,
@@ -33,7 +33,7 @@ export default function MyInvestmentsScreen() {
       ownership: "1.33%",
       annualReturn: 2400,
       status: "Active",
-      image: require("../../assets/images/sudarshana-temple.jpeg"),
+      image: require("../../../../assets/images/sudarshana-temple.jpeg"),
     },
   ];
 
@@ -47,11 +47,7 @@ export default function MyInvestmentsScreen() {
           <Text style={styles.headerTitle}>My Investments</Text>
 
           <View style={styles.notificationWrapper}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color="#111"
-            />
+            <Ionicons name="notifications-outline" size={24} color="#111" />
 
             <View style={styles.notificationDot} />
           </View>
@@ -100,26 +96,15 @@ export default function MyInvestmentsScreen() {
           {investments.map((investment) => (
             <View key={investment.id} style={styles.investmentCard}>
               <View style={styles.topRow}>
-                <Image
-                  source={investment.image}
-                  style={styles.projectImage}
-                />
+                <Image source={investment.image} style={styles.projectImage} />
 
                 <View style={styles.projectInfo}>
-                  <Text style={styles.projectName}>
-                    {investment.name}
-                  </Text>
+                  <Text style={styles.projectName}>{investment.name}</Text>
 
                   <View style={styles.locationRow}>
-                    <Ionicons
-                      name="location"
-                      size={13}
-                      color="#238636"
-                    />
+                    <Ionicons name="location" size={13} color="#238636" />
 
-                    <Text style={styles.location}>
-                      {investment.location}
-                    </Text>
+                    <Text style={styles.location}>{investment.location}</Text>
                   </View>
                 </View>
               </View>
@@ -129,9 +114,7 @@ export default function MyInvestmentsScreen() {
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
                   <Text style={styles.detailLabel}>Shares</Text>
-                  <Text style={styles.detailValue}>
-                    {investment.shares}
-                  </Text>
+                  <Text style={styles.detailValue}>{investment.shares}</Text>
                 </View>
 
                 <View style={styles.detailItem}>
@@ -143,9 +126,7 @@ export default function MyInvestmentsScreen() {
 
                 <View style={styles.detailItem}>
                   <Text style={styles.detailLabel}>Ownership</Text>
-                  <Text style={styles.detailValue}>
-                    {investment.ownership}
-                  </Text>
+                  <Text style={styles.detailValue}>{investment.ownership}</Text>
                 </View>
               </View>
 
@@ -159,16 +140,14 @@ export default function MyInvestmentsScreen() {
 
                 <View style={styles.statusRow}>
                   <View style={styles.statusDot} />
-                  <Text style={styles.statusText}>
-                    {investment.status}
-                  </Text>
+                  <Text style={styles.statusText}>{investment.status}</Text>
                 </View>
               </View>
             </View>
           ))}
         </ScrollView>
 
-        <BottomNav active="investments" />
+        {/* <BottomNav active="investments" /> */}
       </View>
     </SafeAreaView>
   );

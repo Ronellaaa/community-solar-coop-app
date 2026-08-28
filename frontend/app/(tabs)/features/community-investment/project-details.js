@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-import ProgressBar from "../../components/solar-investment/ProgressBar";
+import ProgressBar from "../../../../components/solar-investment/ProgressBar";
 
 export default function ProjectDetailsScreen() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function ProjectDetailsScreen() {
         {/* Project Image */}
         <View style={styles.imageWrapper}>
           <Image
-            source={require("../../assets/images/greenfield-school.jpeg")}
+            source={require("../../../../assets/images/greenfield-school.jpeg")}
             style={styles.projectImage}
           />
 
@@ -57,9 +57,7 @@ export default function ProjectDetailsScreen() {
           <View style={styles.locationRow}>
             <Ionicons name="location" size={16} color="#248c3d" />
 
-            <Text style={styles.locationText}>
-              Kandy, Central Province
-            </Text>
+            <Text style={styles.locationText}>Kandy, Central Province</Text>
           </View>
 
           {/* Stats */}
@@ -91,30 +89,20 @@ export default function ProjectDetailsScreen() {
           </View>
 
           {/* Funding */}
-          <ProgressBar
-            progress={68}
-            raised={1360000}
-            target={2000000}
-          />
+          <ProgressBar progress={68} raised={1360000} target={2000000} />
 
           {/* Description */}
           <Text style={styles.description}>
-            This solar project will power Greenfield School and support
-            clean, affordable energy for students and the local community.
+            This solar project will power Greenfield School and support clean,
+            affordable energy for students and the local community.
           </Text>
 
           {/* Completion */}
           <View style={styles.completionRow}>
             <View style={styles.completionLeft}>
-              <Ionicons
-                name="calendar-outline"
-                size={18}
-                color="#2d9b45"
-              />
+              <Ionicons name="calendar-outline" size={18} color="#2d9b45" />
 
-              <Text style={styles.completionLabel}>
-                Expected Completion
-              </Text>
+              <Text style={styles.completionLabel}>Expected Completion</Text>
             </View>
 
             <Text style={styles.completionDate}>30 Nov 2025</Text>
@@ -124,7 +112,9 @@ export default function ProjectDetailsScreen() {
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() =>
-              router.push("/community-investment/funding-progress")
+              router.push(
+                "/(tabs)/features/community-investment/funding-progress",
+              )
             }
           >
             <Text style={styles.secondaryButtonText}>
@@ -136,7 +126,9 @@ export default function ProjectDetailsScreen() {
           <TouchableOpacity
             style={styles.investButton}
             onPress={() =>
-              router.push("/community-investment/return-calculator")
+              router.push(
+                "/(tabs)/features/community-investment/return-calculator",
+              )
             }
           >
             <Text style={styles.investButtonText}>Invest Now</Text>

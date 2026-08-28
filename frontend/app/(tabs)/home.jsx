@@ -54,7 +54,7 @@ export default function HomeScreen() {
     },
     {
       id: "feature-3",
-      title: "Feature 3",
+      title: "Community Investment",
       description: "Description of friend 2's feature",
       icon: <Zap size={28} color="#F59E0B" strokeWidth={2} />,
       route: "/(tabs)/feature3", // Your friend's route
@@ -69,7 +69,7 @@ export default function HomeScreen() {
       route: "/(tabs)/features/shared-solar/SharedSolarDashboard",
       color: "#F5F3FF",
       textColor: "#8B5CF6",
-},
+    },
   ];
 
   const handleFeaturePress = (route) => {

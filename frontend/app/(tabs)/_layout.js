@@ -130,6 +130,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="feature3"
         options={{
+          href: null,
           title: "Feature 3",
           tabBarLabel: "Feature 3",
 
@@ -316,6 +317,46 @@ export default function TabLayout() {
           href: null,
           title: "Solar Admin Dashboard",
         }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/index"
+        options={{ href: null, title: "Community Projects" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/earnings-history"
+        options={{ href: null, title: "Earnings History" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/project-details"
+        options={{ href: null, title: "Project Details" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/funding-progress"
+        options={{ href: null, title: "Funding Progress" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/return-calculator"
+        options={{ href: null, title: "Return Calculator" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/purchase-shares"
+        options={{ href: null, title: "Purchase Shares" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/investment-success"
+        options={{ href: null, title: "Investment Success" }}
+      />
+
+      <Tabs.Screen
+        name="features/community-investment/my-investments"
+        options={{ href: null, title: "My Investments" }}
       />
     </Tabs>
   );
