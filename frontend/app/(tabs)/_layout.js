@@ -1,17 +1,28 @@
 // frontend/app/(tabs)/_layout.js
 
-import { Tabs } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
-import { Redirect } from "expo-router";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
-import { Home, ShoppingBag, Wrench, Zap, BarChart3 } from "lucide-react-native";
+import { ActivityIndicator, View } from "react-native";
+import {
+  Home,
+  ShoppingBag,
+  Wrench,
+  Zap,
+  Sun,
+} from "lucide-react-native";
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color="#1A5C4A" />
       </View>
     );
@@ -24,8 +35,15 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        // Hide Expo Router's automatic header.
+        // Each feature page can have its own custom header.
+        headerShown: false,
+
+        // Bottom tab colors
         tabBarActiveTintColor: "#1A5C4A",
         tabBarInactiveTintColor: "#94A3B8",
+
+        // Bottom tab bar
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           borderTopWidth: 0,
@@ -34,37 +52,42 @@ export default function TabLayout() {
           paddingTop: 10,
           elevation: 8,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
+          shadowOffset: {
+            width: 0,
+            height: -2,
+          },
           shadowOpacity: 0.05,
           shadowRadius: 8,
         },
-        headerStyle: {
-          backgroundColor: "#FFFFFF",
-        },
-        headerTitleStyle: {
-          fontWeight: "600",
-          color: "#1E293B",
-        },
+
+        // Bottom tab labels
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "500",
           fontFamily: "Nunito_500Medium",
         },
+
         tabBarIconStyle: {
           marginTop: 2,
         },
+
         tabBarItemStyle: {
           paddingVertical: 4,
           borderRadius: 12,
         },
       }}
     >
+      {/* =====================================================
+          MAIN BOTTOM TABS
+          ===================================================== */}
+
       {/* Tab 1: Home */}
       <Tabs.Screen
         name="home"
         options={{
           title: "Home",
           tabBarLabel: "Home",
+
           tabBarIcon: ({ color, size, focused }) => (
             <Home
               size={size || 24}
@@ -82,6 +105,7 @@ export default function TabLayout() {
         options={{
           title: "Deals",
           tabBarLabel: "Deals",
+
           tabBarIcon: ({ color, size, focused }) => (
             <ShoppingBag
               size={size || 24}
@@ -114,6 +138,7 @@ export default function TabLayout() {
         options={{
           title: "Feature 3",
           tabBarLabel: "Feature 3",
+
           tabBarIcon: ({ color, size, focused }) => (
             <Zap
               size={size || 24}
@@ -125,43 +150,149 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tab 5: Feature 4 */}
-      <Tabs.Screen
-        name="feature4"
+    <Tabs.Screen
+        name="Dashboard"
         options={{
-          title: "Feature 4",
-          tabBarLabel: "Feature 4",
-          tabBarIcon: ({ color, size, focused }) => (
-            <BarChart3
-              size={size || 24}
-              color={color}
-              strokeWidth={focused ? 2.5 : 2}
-            />
-          ),
+        title: "Dashboard",
+        tabBarLabel: "Dashboard",
+        tabBarIcon: ({ color, size, focused }) => (
+       <Sun
+        size={size || 24}
+        color={color}
+        strokeWidth={focused ? 2.5 : 2}
+      />
+     ),
+   }}
+ />
+
+      {/* =====================================================
+          GROUP PURCHASING FEATURE SCREENS
+          These DO NOT appear in the bottom navigation.
+          ===================================================== */}
+
+      <Tabs.Screen
+        name="features/group-purchasing/DealsFeed"
+        options={{
+          href: null,
+          title: "Deals",
         }}
       />
 
-      {/* Feature screens are stack routes, not bottom-tab destinations. */}
-      <Tabs.Screen
-        name="features/group-purchasing/DealsFeed"
-        options={{ href: null, title: "Deals" }}
-      />
       <Tabs.Screen
         name="features/group-purchasing/CampaignList"
-        options={{ href: null, title: "Campaigns" }}
+        options={{
+          href: null,
+          title: "Campaigns",
+        }}
       />
+
       <Tabs.Screen
         name="features/group-purchasing/CampaignDetail/index"
-        options={{ href: null, title: "Campaign Detail" }}
+        options={{
+          href: null,
+          title: "Campaign Detail",
+        }}
       />
+
       <Tabs.Screen
         name="features/group-purchasing/GroupCampaignsScreen"
-        options={{ href: null, title: "My Campaigns" }}
+        options={{
+          href: null,
+          title: "My Campaigns",
+        }}
       />
 
       <Tabs.Screen
         name="CampaignProfile"
-        options={{ href: null, title: "My Campaigns" }}
+        options={{
+          href: null,
+          title: "My Campaigns",
+        }}
+      />
+
+      {/* =====================================================
+          SHARED SOLAR FEATURE SCREENS
+          These should NOT appear in the bottom navigation.
+          ===================================================== */}
+
+      <Tabs.Screen
+        name="features/shared-solar/SharedSolarDashboard"
+        options={{
+          href: null,
+          title: "Shared Solar Projects",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/shared-solar/MySolarProject"
+        options={{
+          href: null,
+          title: "My Solar Project",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/shared-solar/MySolarSavings"
+        options={{
+          href: null,
+          title: "My Solar Savings",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/shared-solar/joinSharedSolar"
+        options={{
+          href: null,
+          title: "join shared solar",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/shared-solar/ProjectDetails"
+        options={{
+          href: null,
+          title: "Details",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/admin-shared-solar/AdminProjectMembers"
+        options={{
+          href: null,
+          title: "Members",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/admin-shared-solar/AdminSavingsRecords"
+        options={{
+          href: null,
+          title: "Savings Records",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/admin-shared-solar/AdminSharedSolarDashboard"
+        options={{
+          href: null,
+          title: "Shared Solar Dashboard",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/admin-shared-solar/AdminSharedSolarProjects"
+        options={{
+          href: null,
+          title: "Shared Solar Projects",
+        }}
+      />
+
+      <Tabs.Screen
+        name="features/admin-shared-solar/AdminCreateSolarProject"
+        options={{
+          href: null,
+          title: "Create Solar Project",
+        }}
       />
 
       {/* Feature screens are stack routes, not bottom-tab destinations. */}

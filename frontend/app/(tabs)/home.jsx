@@ -19,7 +19,7 @@ import {
   Users,
   ShoppingBag,
   Zap,
-  BarChart3,
+  PiggyBank,
   ArrowRight,
   Sun,
 } from "lucide-react-native";
@@ -63,13 +63,13 @@ export default function HomeScreen() {
     },
     {
       id: "feature-4",
-      title: "Feature 4",
-      description: "Description of friend 3's feature",
-      icon: <BarChart3 size={28} color="#8B5CF6" strokeWidth={2} />,
-      route: "/(tabs)/feature4", // Your friend's route
+      title: "Shared Solar",
+      description: "Track your solar savings and energy benefits",
+      icon: <PiggyBank size={28} color="#8B5CF6" strokeWidth={2} />,
+      route: "/(tabs)/features/shared-solar/SharedSolarDashboard",
       color: "#F5F3FF",
       textColor: "#8B5CF6",
-    },
+},
   ];
 
   const handleFeaturePress = (route) => {

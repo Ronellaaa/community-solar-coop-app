@@ -3,117 +3,255 @@
 import { supabase } from "../lib/supabase";
 
 export const authService = {
-  // ==================== SIGN UP ====================
+  // =====================================================
+  // SIGN UP
+  // =====================================================
+
   async signUp(email, password, userData = {}) {
-    console.log("🔄 authService: signUp called with:", { email, userData });
+    console.log("🔄 authService: signUp called with:", {
+      email,
+      userData,
+    });
 
     try {
-      // Step 1: Create auth user in Supabase Auth
-      const { data: authData, error: signUpError } = await supabase.auth.signUp(
-        {
+      // Create user in Supabase Auth
+      const { data: authData, error: signUpError } =
+        await supabase.auth.signUp({
           email,
           password,
+
           options: {
             data: {
               name: userData.name || "",
               phone: userData.phone || "",
             },
           },
-        },
-      );
+        });
 
       if (signUpError) {
-        console.error("❌ authService: signUp error:", signUpError);
+        console.error(
+          "❌ authService: signUp error:",
+          signUpError
+        );
+
         throw signUpError;
       }
 
       if (!authData.user) {
-        throw new Error("Failed to create user");
+        throw new Error("Failed to create user.");
       }
 
-      console.log("✅ authService: Auth user created:", authData.user.id);
+      console.log(
+        "✅ authService: Auth user created:",
+        authData.user.id
+      );
 
-      // The database trigger creates the public.users profile automatically.
-      return { user: authData.user };
+      /*
+       * Your database trigger creates the public.users
+       * record automatically.
+       *
+       * The role is NOT supplied during signup.
+       * The database default is:
+       *
+       * role = 'user'
+       */
+
+      return {
+        user: authData.user,
+      };
     } catch (error) {
-      console.error("❌ authService: signUp error:", error);
+      console.error(
+        "❌ authService: signUp error:",
+        error
+      );
+
       throw error;
     }
   },
 
-  // ==================== SIGN IN ====================
-  async signIn(email, password) {
-    console.log("🔄 authService: signIn called with:", { email });
+  // =====================================================
+  // SIGN IN
+  // =====================================================
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  async signIn(email, password) {
+    console.log(
+      "🔄 authService: signIn called with:",
+      { email }
+    );
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     if (error) {
-      console.error("❌ authService: signIn error:", error);
+      console.error(
+        "❌ authService: signIn error:",
+        error
+      );
+
       throw error;
     }
 
-    console.log("✅ authService: signIn successful");
+    console.log(
+      "✅ authService: signIn successful"
+    );
+
     return data;
   },
 
-  // ==================== SIGN OUT ====================
-  async signOut() {
-    console.log("🔄 authService: signOut called");
+  // =====================================================
+  // SIGN OUT
+  // =====================================================
 
-    const { error } = await supabase.auth.signOut();
+  async signOut() {
+    console.log(
+      "🔄 authService: signOut called"
+    );
+
+    const { error } =
+      await supabase.auth.signOut();
+
     if (error) {
-      console.error("❌ authService: signOut error:", error);
+      console.error(
+        "❌ authService: signOut error:",
+        error
+      );
+
       throw error;
     }
 
-    console.log("✅ authService: signOut successful");
+    console.log(
+      "✅ authService: signOut successful"
+    );
   },
 
-  // ==================== GET CURRENT USER ====================
+  // =====================================================
+  // GET CURRENT USER
+  // =====================================================
+
   async getCurrentUser() {
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser();
 
-    if (!user) return null;
+    if (authError) {
+      console.error(
+        "❌ Error getting authenticated user:",
+        authError
+      );
 
-    // Get the user record from your custom users table
-    const { data: userRecord, error } = await supabase
+      throw authError;
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    // Get custom user record
+    const {
+      data: userRecord,
+      error,
+    } = await supabase
       .from("users")
       .select("*")
       .eq("id", user.id)
       .single();
 
     if (error) {
-      console.error("❌ authService: Error fetching user record:", error);
-      return user; // Return auth user as fallback
+      console.error(
+        "❌ authService: Error fetching user record:",
+        error
+      );
+
+      // Fallback to Supabase Auth user
+      return {
+        ...user,
+        role: "user",
+      };
     }
 
-    return userRecord || user;
+    return userRecord || {
+      ...user,
+      role: "user",
+    };
   },
 
-  // ==================== GET SESSION ====================
+  // ==================== GET USER ROLE ====================
+
+async getUserRole() {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    throw authError;
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    console.error("❌ Error fetching user role:", error);
+    throw error;
+  }
+
+  console.log("🔐 Database role:", data?.role);
+
+  return data?.role || "user";
+},
+
+  // =====================================================
+  // GET SESSION
+  // =====================================================
+
   async getSession() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
+
     return session;
   },
 
-  // ==================== RESET PASSWORD ====================
+  // =====================================================
+  // RESET PASSWORD
+  // =====================================================
+
   async resetPassword(email) {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) throw error;
+    const { data, error } =
+      await supabase.auth.resetPasswordForEmail(
+        email
+      );
+
+    if (error) {
+      throw error;
+    }
+
     return data;
   },
 
-  // ==================== UPDATE USER ====================
+  // =====================================================
+  // UPDATE USER
+  // =====================================================
+
   async updateUser(updates) {
-    const { data, error } = await supabase.auth.updateUser(updates);
-    if (error) throw error;
+    const { data, error } =
+      await supabase.auth.updateUser(updates);
+
+    if (error) {
+      throw error;
+    }
+
     return data;
   },
 };
