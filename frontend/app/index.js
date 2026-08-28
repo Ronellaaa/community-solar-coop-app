@@ -1,23 +1,41 @@
-import { View, Text, StyleSheet } from 'react-native';
+// frontend/app/index.js
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Community Solar Co-op App</Text>
-      <Text>Project setup is ready.</Text>
-    </View>
-  );
+import { Redirect } from "expo-router";
+import { useAuth } from "../context/AuthContext";
+import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
+
+export default function IndexScreen() {
+  const { user, loading } = useAuth();
+
+  // Show loading while checking auth status
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1A5C4A" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // If user is logged in, go to home tab
+  if (user) {
+    return <Redirect href="/(tabs)/deals" />;
+  }
+
+  // If not logged in, go to login
+  return <Redirect href="/auth/login" />;
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#64748B",
   },
 });

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
 import {
   ArrowLeft,
   CheckCircle,
+  Clock3,
   MapPin,
   Users,
   Zap,
@@ -22,72 +22,81 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useSharedSolar } from "../../../../hooks/shared-solar/useSharedSolar";
-import { joinSharedSolarProject } from "../../../../services/sharedSolarService";
 import { SHADOWS } from "../../../utils/shared-solar/shadows";
 
 export default function ProjectDetails() {
   const router = useRouter();
 
-  const { projectId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+
+  // Expo Router parameters can sometimes be arrays.
+  const projectId = Array.isArray(params.projectId)
+    ? params.projectId[0]
+    : params.projectId;
 
   const {
     project,
     membership,
+    joinRequest,
     loading,
     error,
     refreshProject,
   } = useSharedSolar(projectId);
 
-  const [joining, setJoining] = React.useState(false);
+  // =====================================================
+  // JOIN PROJECT
+  // =====================================================
 
-  const handleJoinProject = async () => {
+  const handleJoinProject = () => {
     if (!project?.id) {
       return;
     }
 
-    try {
-      setJoining(true);
-
-      await joinSharedSolarProject(project.id);
-
-      Alert.alert(
-        "Successfully Joined",
-        "You are now a member of this community solar project.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              refreshProject();
-            },
-          },
-        ]
-      );
-    } catch (err) {
-      console.error("Error joining project:", err);
-
-      Alert.alert(
-        "Unable to Join",
-        err?.message || "Something went wrong while joining the project."
-      );
-    } finally {
-      setJoining(false);
-    }
-  };
-
-  const handleViewSavings = () => {
     router.push({
-      pathname: "/features/shared-solar/MySolarSavings",
+      pathname: "/features/shared-solar/joinSharedSolar",
       params: {
-        projectId: project.id,
+        projectId: String(project.id),
       },
     });
   };
 
-  const handleViewMyProject = () => {
-    // For now, stay on this project details screen.
-    // We can create a separate My Project screen later if needed.
-    refreshProject();
+  // =====================================================
+  // VIEW MY SAVINGS
+  // =====================================================
+
+  const handleViewSavings = () => {
+    if (!project?.id) {
+      return;
+    }
+
+    router.push({
+      pathname: "/features/shared-solar/MySolarSavings",
+      params: {
+        projectId: String(project.id),
+      },
+    });
   };
+
+  // =====================================================
+  // VIEW MY PROJECT
+  // =====================================================
+
+  const handleViewMyProject = () => {
+    if (!project?.id) {
+      return;
+    }
+
+    router.push({
+      pathname: "/features/shared-solar/MySolarProject",
+      params: {
+        projectId: String(project.id),
+      },
+    });
+  };
+
+  // =====================================================
+  // LOADING
+  // =====================================================
 
   if (loading && !project) {
     return (
@@ -103,6 +112,10 @@ export default function ProjectDetails() {
       </View>
     );
   }
+
+  // =====================================================
+  // ERROR
+  // =====================================================
 
   if (error && !project) {
     return (
@@ -136,6 +149,10 @@ export default function ProjectDetails() {
     );
   }
 
+  // =====================================================
+  // PROJECT NOT FOUND
+  // =====================================================
+
   if (!project) {
     return (
       <View style={styles.errorContainer}>
@@ -159,6 +176,10 @@ export default function ProjectDetails() {
     );
   }
 
+  // =====================================================
+  // PROJECT VALUES
+  // =====================================================
+
   const capacity = Number(
     project.total_capacity_kw || 0
   );
@@ -179,7 +200,19 @@ export default function ProjectDetails() {
     project.total_estimated_savings || 0
   );
 
+  // =====================================================
+  // MEMBERSHIP / REQUEST STATUS
+  // =====================================================
+
   const isMember = !!membership;
+
+  const requestStatus = joinRequest?.status || null;
+
+  const hasPendingRequest =
+    !isMember && requestStatus === "pending";
+
+  const hasRejectedRequest =
+    !isMember && requestStatus === "rejected";
 
   const memberProgress =
     targetMembers > 0
@@ -188,6 +221,10 @@ export default function ProjectDetails() {
           100
         )
       : 0;
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   return (
     <ScrollView
@@ -202,7 +239,10 @@ export default function ProjectDetails() {
         />
       }
     >
-      {/* Header */}
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -223,7 +263,10 @@ export default function ProjectDetails() {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Project Hero */}
+      {/* =================================================
+          PROJECT HERO
+      ================================================= */}
+
       <View style={styles.heroCard}>
         <View style={styles.heroIcon}>
           <Sun
@@ -235,7 +278,7 @@ export default function ProjectDetails() {
 
         <View style={styles.statusBadge}>
           <Text style={styles.statusText}>
-            {project.status || "active"}
+            {project.status || "planning"}
           </Text>
         </View>
 
@@ -258,7 +301,10 @@ export default function ProjectDetails() {
         ) : null}
       </View>
 
-      {/* About */}
+      {/* =================================================
+          ABOUT
+      ================================================= */}
+
       {project.description ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -271,13 +317,17 @@ export default function ProjectDetails() {
         </View>
       ) : null}
 
-      {/* Project Statistics */}
+      {/* =================================================
+          PROJECT OVERVIEW
+      ================================================= */}
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
           Project Overview
         </Text>
 
         <View style={styles.statsGrid}>
+          {/* Capacity */}
           <View style={styles.statCard}>
             <View style={styles.statIconGreen}>
               <Zap
@@ -296,6 +346,7 @@ export default function ProjectDetails() {
             </Text>
           </View>
 
+          {/* Members */}
           <View style={styles.statCard}>
             <View style={styles.statIconBlue}>
               <Users
@@ -314,6 +365,7 @@ export default function ProjectDetails() {
             </Text>
           </View>
 
+          {/* Energy */}
           <View style={styles.statCard}>
             <View style={styles.statIconOrange}>
               <TrendingUp
@@ -332,6 +384,7 @@ export default function ProjectDetails() {
             </Text>
           </View>
 
+          {/* Savings */}
           <View style={styles.statCard}>
             <View style={styles.statIconGreen}>
               <IndianRupee
@@ -352,7 +405,10 @@ export default function ProjectDetails() {
         </View>
       </View>
 
-      {/* Member Progress */}
+      {/* =================================================
+          COMMUNITY PARTICIPATION
+      ================================================= */}
+
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>
@@ -388,7 +444,10 @@ export default function ProjectDetails() {
         </View>
       </View>
 
-      {/* Savings Information */}
+      {/* =================================================
+          SAVINGS INFORMATION
+      ================================================= */}
+
       <View style={styles.savingsCard}>
         <View style={styles.savingsIcon}>
           <IndianRupee
@@ -414,7 +473,10 @@ export default function ProjectDetails() {
         </View>
       </View>
 
-      {/* Membership Section */}
+      {/* =================================================
+          USER IS ALREADY A MEMBER
+      ================================================= */}
+
       {isMember ? (
         <View style={styles.memberSection}>
           <View style={styles.memberSuccess}>
@@ -430,7 +492,9 @@ export default function ProjectDetails() {
               </Text>
 
               <Text style={styles.memberSubtitle}>
-                You have joined this community solar project.
+                Your membership has been approved.
+                You can now view your energy benefits
+                and savings.
               </Text>
             </View>
           </View>
@@ -468,45 +532,105 @@ export default function ProjectDetails() {
             />
           </TouchableOpacity>
         </View>
+      ) : hasPendingRequest ? (
+        /* =================================================
+           JOIN REQUEST IS PENDING
+        ================================================= */
+
+        <View style={styles.pendingSection}>
+          <View style={styles.pendingIcon}>
+            <Clock3
+              size={24}
+              color="#D97706"
+              strokeWidth={2.2}
+            />
+          </View>
+
+          <Text style={styles.pendingTitle}>
+            Joining Request Submitted
+          </Text>
+
+          <Text style={styles.pendingDescription}>
+            Your request to join this shared solar
+            project has been submitted successfully.
+            Please wait for the administrator to review
+            and approve your request.
+          </Text>
+
+          <View style={styles.pendingBadge}>
+            <Clock3
+              size={15}
+              color="#D97706"
+              strokeWidth={2.2}
+            />
+
+            <Text style={styles.pendingBadgeText}>
+              Pending Admin Approval
+            </Text>
+          </View>
+        </View>
+      ) : hasRejectedRequest ? (
+        /* =================================================
+           REQUEST REJECTED
+        ================================================= */
+
+        <View style={styles.rejectedSection}>
+          <Text style={styles.rejectedTitle}>
+            Joining Request Not Approved
+          </Text>
+
+          <Text style={styles.rejectedDescription}>
+            Your previous request was not approved by
+            the administrator. You can submit a new
+            request if the project is accepting members.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleJoinProject}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.primaryButtonText}>
+              Submit New Request
+            </Text>
+
+            <Users
+              size={18}
+              color="#FFFFFF"
+              strokeWidth={2.2}
+            />
+          </TouchableOpacity>
+        </View>
       ) : (
+        /* =================================================
+           USER HAS NOT SUBMITTED REQUEST
+        ================================================= */
+
         <View style={styles.joinSection}>
           <Text style={styles.joinTitle}>
             Interested in joining this community?
           </Text>
 
           <Text style={styles.joinDescription}>
-            Join this shared solar project to become a
-            community member and track your allocated
-            energy and estimated savings.
+            Submit a joining request to become part of
+            this shared solar community. Your request
+            will be reviewed by the administrator.
           </Text>
 
           <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              joining && styles.disabledButton,
-            ]}
+            style={styles.primaryButton}
             onPress={handleJoinProject}
-            disabled={joining}
             activeOpacity={0.8}
           >
-            {joining ? (
-              <ActivityIndicator
-                size="small"
-                color="#FFFFFF"
-              />
-            ) : (
-              <>
-                <Text style={styles.primaryButtonText}>
-                  Join This Community
-                </Text>
+            <Text style={styles.primaryButtonText}>
+              Join This Community
+            </Text>
 
-                <Users
-                  size={18}
-                  color="#FFFFFF"
-                  strokeWidth={2.2}
-                />
-              </>
-            )}
+            <Users
+              size={18}
+              color="#FFFFFF"
+              strokeWidth={2.2}
+            />
           </TouchableOpacity>
         </View>
       )}
@@ -851,9 +975,92 @@ const styles = StyleSheet.create({
 
   memberSubtitle: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: "Nunito_400Regular",
     color: "#64748B",
     marginTop: 2,
+  },
+
+  pendingSection: {
+    marginHorizontal: 20,
+    marginTop: 22,
+    padding: 20,
+    backgroundColor: "#FFFBEB",
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    alignItems: "center",
+  },
+
+  pendingIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: "#FEF3C7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+
+  pendingTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: "Nunito_700Bold",
+    color: "#92400E",
+    textAlign: "center",
+  },
+
+  pendingDescription: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: "Nunito_400Regular",
+    color: "#78350F",
+    textAlign: "center",
+    marginTop: 7,
+  },
+
+  pendingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: "#FEF3C7",
+  },
+
+  pendingBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    fontFamily: "Nunito_700Bold",
+    color: "#D97706",
+  },
+
+  rejectedSection: {
+    marginHorizontal: 20,
+    marginTop: 22,
+    padding: 18,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+
+  rejectedTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: "Nunito_700Bold",
+    color: "#991B1B",
+  },
+
+  rejectedDescription: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: "Nunito_400Regular",
+    color: "#64748B",
+    marginTop: 6,
+    marginBottom: 15,
   },
 
   primaryButton: {
@@ -899,10 +1106,6 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "180deg" }],
   },
 
-  disabledButton: {
-    opacity: 0.7,
-  },
-
   loadingContainer: {
     flex: 1,
     backgroundColor: "#F8FAFC",
@@ -937,7 +1140,6 @@ const styles = StyleSheet.create({
     fontFamily: "Nunito_400Regular",
     color: "#EF4444",
     textAlign: "center",
-    textAlignVertical: "center",
     marginTop: 8,
   },
 
