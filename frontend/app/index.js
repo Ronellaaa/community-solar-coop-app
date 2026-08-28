@@ -1,10 +1,15 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { router } from "expo-router";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Community Solar Co-op App</Text>
-      <Text>Project setup is ready.</Text>
+      <TouchableOpacity
+        style={styles.energyButton}
+        onPress={() => router.push("/energy-monitoring")}
+      >
+        <Text style={styles.energyButtonText}>Energy Monitoring</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -12,12 +17,20 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 20,
+    justifyContent: "center",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+
+  energyButton: {
+    backgroundColor: "#173D24",
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+
+  energyButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });
