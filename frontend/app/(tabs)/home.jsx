@@ -48,7 +48,7 @@ export default function HomeScreen() {
       title: "Feature 2",
       description: "Description of friend 1's feature",
       icon: <ShoppingBag size={28} color="#3B82F6" strokeWidth={2} />,
-      route: "/(tabs)/feature2", // Your friend's route
+      route: "/energy-monitoring", // Your friend's route
       color: "#EFF6FF",
       textColor: "#3B82F6",
     },
