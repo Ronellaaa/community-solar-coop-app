@@ -130,9 +130,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="feature3"
         options={{
-          href: null,
-          title: "Feature 3",
-          tabBarLabel: "Feature 3",
+          //href: null,
+          title: "Solar Investment",
+          tabBarLabel: "Investments",
 
           tabBarIcon: ({ color, size, focused }) => (
             <Zap

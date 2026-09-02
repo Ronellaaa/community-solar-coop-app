@@ -45,8 +45,8 @@ export default function HomeScreen() {
     },
     {
       id: "feature-2",
-      title: "Feature 2",
-      description: "Description of friend 1's feature",
+      title: "Energy Monitoring Dashboard",
+      description: "Track your energy consumption and production in real-time",
       icon: <ShoppingBag size={28} color="#3B82F6" strokeWidth={2} />,
       route: "/(tabs)/feature2", // Your friend's route
       color: "#EFF6FF",
@@ -55,7 +55,7 @@ export default function HomeScreen() {
     {
       id: "feature-3",
       title: "Community Investment",
-      description: "Description of friend 2's feature",
+      description: "Invest in community solar projects and earn returns",
       icon: <Zap size={28} color="#F59E0B" strokeWidth={2} />,
       route: "/(tabs)/feature3", // Your friend's route
       color: "#FFFBEB",
