@@ -41,7 +41,8 @@ export const campaignService = {
           logo,
           rating,
           years_in_business,
-          is_verified
+          is_verified,
+          phone
         )
       `);
     if (error) {
@@ -72,7 +73,8 @@ export const campaignService = {
           logo,
           rating,
           years_in_business,
-          is_verified
+          is_verified,
+          phone
         )
       `,
       )
@@ -153,7 +155,8 @@ export const campaignService = {
             logo,
             rating,
             years_in_business,
-            is_verified
+            is_verified,
+            phone
           )
         ),
         organizer:organizer_id (
@@ -217,7 +220,8 @@ export const campaignService = {
             logo,
             rating,
             years_in_business,
-            is_verified
+            is_verified,
+            phone
           )
         ),
         organizer:organizer_id (
@@ -652,6 +656,32 @@ export const campaignService = {
       .select();
     if (error) throw error;
     console.log("✅ [campaignService] markPaymentStatus completed");
+    return data;
+  },
+
+  // ============================================================
+  // ✅ APPROVE COMPLETION (Organizer action)
+  // Organizer confirms installation done → status: "completed"
+  // ============================================================
+  async approveCompletion(campaignId) {
+    console.log(
+      "🔄 [campaignService] approveCompletion called with:",
+      campaignId,
+    );
+
+    const { data, error } = await supabase
+      .from("campaigns")
+      .update({ status: "completed" })
+      .eq("id", campaignId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("❌ [campaignService] Error approving completion:", error);
+      throw error;
+    }
+
+    console.log("✅ [campaignService] Campaign marked as completed");
     return data;
   },
 };

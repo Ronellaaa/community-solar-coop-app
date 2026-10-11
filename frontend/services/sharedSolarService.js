@@ -6,15 +6,15 @@ import { supabase } from "../lib/supabase";
 
 const getCurrentUser = async () => {
   const {
-    data: { user },
+    data: { session },
     error,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
   if (error) {
     throw error;
   }
 
-  return user;
+  return session?.user ?? null;
 };
 
 // =====================================================

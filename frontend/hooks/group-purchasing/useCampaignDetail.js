@@ -1,9 +1,10 @@
 // hooks/features/group-purchasing/useCampaignDetail.js
 
-import { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Alert } from "react-native";
 import { useCampaigns } from "./useCampaigns";
+import { installerService } from "../../services/group-purchasing/installerService";
 import {
   calculateProgress,
   formatCurrency,
@@ -21,40 +22,67 @@ export const useCampaignDetail = (campaignId) => {
     currentUser,
     confirmGroup,
     markPaymentStatus,
-    leaveCampaign, // ✅ ADD THIS
+    leaveCampaign,
     deleteCampaign,
+    approveCompletion, // ✅ ADDED
   } = useCampaigns();
+  const getCampaignWithDetailsRef = useRef(getCampaignWithDetails);
+  getCampaignWithDetailsRef.current = getCampaignWithDetails;
 
   const [campaign, setCampaign] = useState(null);
+  const [installerBankDetails, setInstallerBankDetails] = useState(null);
   const [hasJoined, setHasJoined] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [optimisticMemberAdded, setOptimisticMemberAdded] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load campaign data
-  useEffect(() => {
-    const loadCampaign = async () => {
-      try {
-        setLoading(true);
-        console.log("🔄 useCampaignDetail: Loading campaign:", campaignId);
-        const data = await getCampaignWithDetails(campaignId);
-        console.log("📦 useCampaignDetail: Campaign data:", data);
-        setCampaign(data);
-        setOptimisticMemberAdded(false);
-      } catch (error) {
-        console.error("❌ Error loading campaign:", error);
-      } finally {
-        setLoading(false);
+  const loadCampaign = useCallback(async () => {
+    if (!campaignId) return;
+
+    try {
+    setLoading(true);
+    console.log("🔄 useCampaignDetail: Loading campaign:", campaignId);
+    const data = await getCampaignWithDetailsRef.current(campaignId);
+    console.log("📦 useCampaignDetail: Campaign data:", data);
+
+    if (!data) {
+      console.log("⚠️ Campaign not found, redirecting...");
+      router.replace("/(tabs)/CampaignProfile");
+      return;
+    }
+
+    setCampaign(data);
+    setOptimisticMemberAdded(false);
+
+      const installerId = data?.deal?.installer?.id;
+      if (installerId) {
+        const bankData = await installerService.getBankDetails(installerId);
+        setInstallerBankDetails(bankData);
+        console.log("🏦 Bank details loaded:", !!bankData);
       }
-    };
+    } catch (error) {
+      console.error("❌ Error loading campaign:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [campaignId, router]);
+
+  const refreshCampaign = useCallback(async () => {
+    console.log("🔄 Refreshing campaign data...");
+    await loadCampaign();
+    console.log("✅ Campaign refreshed");
+  }, [loadCampaign]);
+
+  useFocusEffect(
+    useCallback(() => {
     loadCampaign();
-  }, [campaignId]);
+    }, [loadCampaign]),
+  );
 
   // ✅ FIXED: handleJoin with async/await and data refresh
   const handleJoin = () => {
     if (!campaign) return;
 
-    // Check if user is already a member
     const alreadyJoined = campaign.members?.some(
       (member) => member.user?.id === currentUser?.id,
     );
@@ -64,7 +92,6 @@ export const useCampaignDetail = (campaignId) => {
       return;
     }
 
-    // Check if campaign is full
     const target = campaign.deal?.needed_neighbors || 5;
     const currentMembers = campaign.current_members || 0;
     if (currentMembers >= target) {
@@ -84,24 +111,19 @@ export const useCampaignDetail = (campaignId) => {
         discountedPrice,
       )}?`,
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Yes, Join!",
           onPress: async () => {
             setIsJoining(true);
 
             try {
-              // ✅ Call joinCampaign and wait for it to complete
               const result = await joinCampaign(campaign.id);
               if (!result?.success) {
                 throw new Error("The campaign join did not complete");
               }
               console.log("✅ Successfully joined campaign");
 
-              // ✅ Update local state optimistically
               if (currentUser) {
                 const optimisticMember = {
                   user: currentUser,
@@ -122,7 +144,6 @@ export const useCampaignDetail = (campaignId) => {
               setHasJoined(true);
               setIsJoining(false);
 
-              // ✅ Refresh campaign data from database to get accurate counts
               const refreshedCampaign = await getCampaignWithDetails(
                 campaign.id,
               );
@@ -136,12 +157,9 @@ export const useCampaignDetail = (campaignId) => {
                 [
                   {
                     text: "View My Campaigns",
-                    onPress: () => router.push("/(tabs)/campaigns"),
+                    onPress: () => router.push("/(tabs)/CampaignProfile"),
                   },
-                  {
-                    text: "Stay Here",
-                    style: "cancel",
-                  },
+                  { text: "Stay Here", style: "cancel" },
                 ],
               );
             } catch (error) {
@@ -158,7 +176,7 @@ export const useCampaignDetail = (campaignId) => {
     );
   };
 
-  // ✅ NEW: Handle leaving campaign (for organizer when only member)
+  // ✅ Handle leaving campaign (for organizer when only member)
   const handleLeaveCampaign = async (campaignId, userId) => {
     try {
       const result = await leaveCampaign(campaignId, userId);
@@ -179,6 +197,24 @@ export const useCampaignDetail = (campaignId) => {
     }
   };
 
+  // ✅ UPDATED: Handle organizer's approval of completion
+  // Now uses `approveCompletion` from useCampaigns() (which routes
+  // through AppContext → campaignService) instead of installerService
+  const handleApproveCompletion = async (campaignId) => {
+    try {
+      console.log(
+        "🔄 useCampaignDetail: Approving completion for:",
+        campaignId,
+      );
+      const result = await approveCompletion(campaignId);
+      console.log("✅ useCampaignDetail: Completion approved");
+      return result;
+    } catch (error) {
+      console.error("❌ Error approving completion:", error);
+      throw error;
+    }
+  };
+
   const handleBack = () => {
     if (campaign?.deal_type_id) {
       router.replace({
@@ -191,7 +227,7 @@ export const useCampaignDetail = (campaignId) => {
     router.replace("/(tabs)/deals");
   };
 
-  // Compute values from campaign data
+  // Compute values
   const target = campaign?.deal?.needed_neighbors || 5;
   const currentMembers = campaign?.current_members || 0;
   const isFull = isCampaignFull(currentMembers, target);
@@ -222,7 +258,10 @@ export const useCampaignDetail = (campaignId) => {
     handleBack,
     confirmGroup,
     markPaymentStatus,
-    leaveCampaign: handleLeaveCampaign, // ✅ ADD THIS
+    leaveCampaign: handleLeaveCampaign,
     deleteCampaign: handleDeleteCampaign,
+    refreshCampaign,
+    installerBankDetails,
+    approveCompletion: handleApproveCompletion,
   };
 };

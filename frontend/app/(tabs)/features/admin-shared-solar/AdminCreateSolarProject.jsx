@@ -2,6 +2,7 @@ import React from "react";
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,6 +17,7 @@ import {
   CheckCircle,
 } from "lucide-react-native";
 import {
+  useFocusEffect,
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
@@ -31,9 +33,35 @@ export default function AdminCreateSolarProject() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  const projectId = params.projectId;
+  const projectId = Array.isArray(params.projectId)
+    ? params.projectId[0]
+    : params.projectId;
 
   const isEditing = Boolean(projectId);
+  const goToReturnScreen = React.useCallback(
+    () => {
+      router.replace(
+        isEditing
+          ? "/(tabs)/features/admin-shared-solar/AdminSharedSolarProjects"
+          : "/(tabs)/features/admin-shared-solar/AdminSharedSolarDashboard",
+      );
+    },
+    [isEditing, router],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToReturnScreen();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [goToReturnScreen]),
+  );
 
   const [name, setName] = React.useState("");
   const [location, setLocation] = React.useState("");
@@ -62,9 +90,23 @@ export default function AdminCreateSolarProject() {
     const loadProject = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        const project =
-          await getSharedSolarProject(projectId);
+        let timeoutId;
+        const project = await Promise.race([
+          getSharedSolarProject(projectId),
+          new Promise((_, reject) => {
+            timeoutId = setTimeout(
+              () =>
+                reject(
+                  new Error(
+                    "Loading the project timed out. Check your connection and try again.",
+                  ),
+                ),
+              15000,
+            );
+          }),
+        ]).finally(() => clearTimeout(timeoutId));
 
         setName(project.name || "");
         setLocation(project.location || "");
@@ -143,7 +185,7 @@ export default function AdminCreateSolarProject() {
           [
             {
               text: "OK",
-              onPress: () => router.back(),
+              onPress: goToReturnScreen,
             },
           ]
         );
@@ -164,7 +206,7 @@ export default function AdminCreateSolarProject() {
           [
             {
               text: "OK",
-              onPress: () => router.back(),
+              onPress: goToReturnScreen,
             },
           ]
         );
@@ -184,14 +226,23 @@ export default function AdminCreateSolarProject() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator
-          size="large"
-          color="#16A34A"
-        />
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={goToReturnScreen}
+          >
+            <ArrowLeft size={22} color="#1E293B" />
+          </TouchableOpacity>
 
-        <Text style={styles.loadingText}>
-          Loading project...
-        </Text>
+          <Text style={styles.headerTitle}>Edit Solar Project</Text>
+
+          <View style={styles.headerSpacer} />
+        </View>
+
+        <View style={styles.loadingContent}>
+          <ActivityIndicator size="large" color="#16A34A" />
+          <Text style={styles.loadingText}>Loading project...</Text>
+        </View>
       </View>
     );
   }
@@ -208,7 +259,7 @@ export default function AdminCreateSolarProject() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={goToReturnScreen}
         >
           <ArrowLeft
             size={22}
@@ -548,6 +599,10 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     backgroundColor: "#F8FAFC",
+  },
+
+  loadingContent: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },

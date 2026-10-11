@@ -124,7 +124,6 @@ export const AppProvider = ({ children }) => {
     await loadAllData();
   };
 
-  // ✅ NEW: Delete campaign (for organizer when only member)
   const deleteCampaign = async (campaignId, userId) => {
     console.log(
       "🔄 AppContext: deleteCampaign called with:",
@@ -156,6 +155,19 @@ export const AppProvider = ({ children }) => {
     );
     await campaignService.markPaymentStatus(campaignId, memberId, status);
     await loadAllData();
+  };
+
+  // ✅ NEW: Approve completion (organizer action)
+  const approveCompletion = async (campaignId) => {
+    console.log("🔄 AppContext: approveCompletion called with:", campaignId);
+    try {
+      const result = await campaignService.approveCompletion(campaignId);
+      await loadAllData();
+      return result;
+    } catch (error) {
+      console.error("❌ AppContext: approveCompletion error:", error);
+      throw error;
+    }
   };
 
   // ============================================================
@@ -191,9 +203,10 @@ export const AppProvider = ({ children }) => {
     getCampaignsJoinedByUser,
     joinCampaign,
     leaveCampaign,
-    deleteCampaign, // ✅ ADD THIS
+    deleteCampaign,
     confirmGroup,
     markPaymentStatus,
+    approveCompletion, // ✅ ADD THIS
     createCampaign,
   };
 

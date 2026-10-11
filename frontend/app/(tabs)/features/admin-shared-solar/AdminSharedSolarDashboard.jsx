@@ -9,15 +9,16 @@ import {
   View,
 } from "react-native";
 import {
-  ArrowLeft,
   FolderOpen,
   Users,
   Zap,
   TrendingUp,
   Plus,
   ClipboardList,
+  UserCheck,
 } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { ProfileAvatar } from "../../../../components/common/ProfileAvatar";
 
 import {
   getAdminSharedSolarProjects,
@@ -38,54 +39,64 @@ export default function AdminSharedSolarDashboard() {
       setLoading(true);
       setError(null);
 
-      const [projectData, requestData] = await Promise.all([
-        getAdminSharedSolarProjects(),
-        getAllJoinRequests(),
-      ]);
+      let timeoutId;
+      const [projectData, requestData] = await Promise.race([
+        Promise.all([
+          getAdminSharedSolarProjects(),
+          getAllJoinRequests(),
+        ]),
+        new Promise((_, reject) => {
+          timeoutId = setTimeout(
+            () =>
+              reject(
+                new Error(
+                  "Loading the admin dashboard timed out. Check your connection and try again.",
+                ),
+              ),
+            15000,
+          );
+        }),
+      ]).finally(() => clearTimeout(timeoutId));
 
       setProjects(projectData);
       setRequests(requestData);
     } catch (err) {
       console.error(err);
-      setError(
-        err?.message || "Unable to load admin dashboard."
-      );
+      setError(err?.message || "Unable to load admin dashboard.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  React.useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [loadData]),
+  );
 
   const activeProjects = projects.filter(
-    (project) => project.status === "active"
+    (project) => project.status === "active",
   ).length;
 
   const totalMembers = projects.reduce(
-    (total, project) =>
-      total + Number(project.current_members || 0),
-    0
+    (total, project) => total + Number(project.current_members || 0),
+    0,
   );
 
   const totalCapacity = projects.reduce(
-    (total, project) =>
-      total + Number(project.total_capacity_kw || 0),
-    0
+    (total, project) => total + Number(project.total_capacity_kw || 0),
+    0,
   );
 
   const pendingRequests = requests.filter(
-    (request) => request.status === "pending"
+    (request) => request.status === "pending",
   ).length;
 
   if (loading && projects.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#16A34A" />
-        <Text style={styles.loadingText}>
-          Loading admin dashboard...
-        </Text>
+        <Text style={styles.loadingText}>Loading admin dashboard...</Text>
       </View>
     );
   }
@@ -93,18 +104,11 @@ export default function AdminSharedSolarDashboard() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={22} color="#1E293B" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>
-          Solar Admin Dashboard
-        </Text>
-
         <View style={styles.headerSpacer} />
+
+        <Text style={styles.headerTitle}>Solar Admin Dashboard</Text>
+
+        <ProfileAvatar size={40} />
       </View>
 
       <ScrollView
@@ -123,13 +127,11 @@ export default function AdminSharedSolarDashboard() {
           </View>
 
           <View style={styles.welcomeContent}>
-            <Text style={styles.welcomeTitle}>
-              Shared Solar Management
-            </Text>
+            <Text style={styles.welcomeTitle}>Shared Solar Management</Text>
 
             <Text style={styles.welcomeText}>
-              Manage community solar projects, members,
-              allocations and estimated savings.
+              Manage community solar projects, members, allocations and
+              estimated savings.
             </Text>
           </View>
         </View>
@@ -137,6 +139,9 @@ export default function AdminSharedSolarDashboard() {
         {error ? (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={loadData}>
+              <Text style={styles.retryText}>Try Again</Text>
+            </TouchableOpacity>
           </View>
         ) : null}
 
@@ -146,13 +151,9 @@ export default function AdminSharedSolarDashboard() {
               <FolderOpen size={21} color="#16A34A" />
             </View>
 
-            <Text style={styles.statValue}>
-              {projects.length}
-            </Text>
+            <Text style={styles.statValue}>{projects.length}</Text>
 
-            <Text style={styles.statLabel}>
-              Total Projects
-            </Text>
+            <Text style={styles.statLabel}>Total Projects</Text>
           </View>
 
           <View style={styles.statCard}>
@@ -160,13 +161,9 @@ export default function AdminSharedSolarDashboard() {
               <Zap size={21} color="#2563EB" />
             </View>
 
-            <Text style={styles.statValue}>
-              {activeProjects}
-            </Text>
+            <Text style={styles.statValue}>{activeProjects}</Text>
 
-            <Text style={styles.statLabel}>
-              Active Projects
-            </Text>
+            <Text style={styles.statLabel}>Active Projects</Text>
           </View>
 
           <View style={styles.statCard}>
@@ -174,13 +171,9 @@ export default function AdminSharedSolarDashboard() {
               <Users size={21} color="#7C3AED" />
             </View>
 
-            <Text style={styles.statValue}>
-              {totalMembers}
-            </Text>
+            <Text style={styles.statValue}>{totalMembers}</Text>
 
-            <Text style={styles.statLabel}>
-              Members
-            </Text>
+            <Text style={styles.statLabel}>Members</Text>
           </View>
 
           <View style={styles.statCard}>
@@ -188,26 +181,20 @@ export default function AdminSharedSolarDashboard() {
               <TrendingUp size={21} color="#F97316" />
             </View>
 
-            <Text style={styles.statValue}>
-              {totalCapacity}
-            </Text>
+            <Text style={styles.statValue}>{totalCapacity}</Text>
 
-            <Text style={styles.statLabel}>
-              Capacity (kW)
-            </Text>
+            <Text style={styles.statLabel}>Capacity (kW)</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Quick Actions
-          </Text>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
 
           <TouchableOpacity
             style={styles.actionCard}
             onPress={() =>
               router.push(
-                "/(tabs)/features/admin-shared-solar/AdminCreateSolarProject"
+                "/(tabs)/features/admin-shared-solar/AdminCreateSolarProject",
               )
             }
           >
@@ -216,9 +203,7 @@ export default function AdminSharedSolarDashboard() {
             </View>
 
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>
-                Create Solar Project
-              </Text>
+              <Text style={styles.actionTitle}>Create Solar Project</Text>
 
               <Text style={styles.actionText}>
                 Add a new community shared solar project.
@@ -230,7 +215,7 @@ export default function AdminSharedSolarDashboard() {
             style={styles.actionCard}
             onPress={() =>
               router.push(
-                "/(tabs)/features/admin-shared-solar/AdminSharedSolarProjects"
+                "/(tabs)/features/admin-shared-solar/AdminSharedSolarProjects",
               )
             }
           >
@@ -239,9 +224,7 @@ export default function AdminSharedSolarDashboard() {
             </View>
 
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>
-                Manage Projects
-              </Text>
+              <Text style={styles.actionTitle}>Manage Projects</Text>
 
               <Text style={styles.actionText}>
                 View and manage all shared solar projects.
@@ -253,7 +236,7 @@ export default function AdminSharedSolarDashboard() {
             style={styles.actionCard}
             onPress={() =>
               router.push(
-                "/(tabs)/features/admin-shared-solar/AdminProjectMembers"
+                "/(tabs)/features/admin-shared-solar/AdminProjectMembers",
               )
             }
           >
@@ -262,9 +245,7 @@ export default function AdminSharedSolarDashboard() {
             </View>
 
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>
-                Manage Members
-              </Text>
+              <Text style={styles.actionTitle}>Manage Members</Text>
 
               <Text style={styles.actionText}>
                 View member ownership and energy allocation.
@@ -276,7 +257,7 @@ export default function AdminSharedSolarDashboard() {
             style={styles.actionCard}
             onPress={() =>
               router.push(
-                "/(tabs)/features/admin-shared-solar/AdminSavingsRecords"
+                "/(tabs)/features/admin-shared-solar/AdminSavingsRecords",
               )
             }
           >
@@ -285,12 +266,33 @@ export default function AdminSharedSolarDashboard() {
             </View>
 
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>
-                Manage Savings
-              </Text>
+              <Text style={styles.actionTitle}>Manage Savings</Text>
 
               <Text style={styles.actionText}>
                 Add and maintain estimated savings records.
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Group Purchasing Management</Text>
+
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() =>
+              router.push("/(tabs)/features/group-purchasing/ManageInstallers")
+            }
+          >
+            <View style={styles.actionIcon}>
+              <UserCheck size={22} color="#0F766E" />
+            </View>
+
+            <View style={styles.actionContent}>
+              <Text style={styles.actionTitle}>Manage Installers</Text>
+
+              <Text style={styles.actionText}>
+                Review and approve group purchasing installer applications.
               </Text>
             </View>
           </TouchableOpacity>
@@ -300,13 +302,9 @@ export default function AdminSharedSolarDashboard() {
           <ClipboardList size={22} color="#F97316" />
 
           <View style={styles.pendingContent}>
-            <Text style={styles.pendingTitle}>
-              Pending Join Requests
-            </Text>
+            <Text style={styles.pendingTitle}>Pending Join Requests</Text>
 
-            <Text style={styles.pendingValue}>
-              {pendingRequests}
-            </Text>
+            <Text style={styles.pendingValue}>{pendingRequests}</Text>
           </View>
         </View>
 

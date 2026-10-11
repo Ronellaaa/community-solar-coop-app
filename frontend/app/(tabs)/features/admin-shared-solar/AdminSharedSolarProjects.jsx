@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  ActivityIndicator,
+  BackHandler,
   Alert,
   RefreshControl,
   ScrollView,
@@ -17,7 +17,10 @@ import {
   Zap,
   ChevronRight,
 } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useRouter,
+} from "expo-router";
 
 import {
   getAdminSharedSolarProjects,
@@ -26,6 +29,13 @@ import { SHADOWS } from "../../../utils/shared-solar/shadows";
 
 export default function AdminSharedSolarProjects() {
   const router = useRouter();
+  const goToAdminDashboard = React.useCallback(
+    () =>
+      router.replace(
+        "/(tabs)/features/admin-shared-solar/AdminSharedSolarDashboard",
+      ),
+    [router],
+  );
 
   const [projects, setProjects] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -36,7 +46,21 @@ export default function AdminSharedSolarProjects() {
       setLoading(true);
       setError(null);
 
-      const data = await getAdminSharedSolarProjects();
+      let timeoutId;
+      const data = await Promise.race([
+        getAdminSharedSolarProjects(),
+        new Promise((_, reject) => {
+          timeoutId = setTimeout(
+            () =>
+              reject(
+                new Error(
+                  "Loading projects timed out. Check your connection and try again.",
+                ),
+              ),
+            15000,
+          );
+        }),
+      ]).finally(() => clearTimeout(timeoutId));
 
       setProjects(data);
     } catch (err) {
@@ -49,16 +73,27 @@ export default function AdminSharedSolarProjects() {
     }
   }, []);
 
-  React.useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToAdminDashboard();
+          return true;
+        },
+      );
+      loadProjects();
+
+      return () => subscription.remove();
+    }, [goToAdminDashboard, loadProjects]),
+  );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={goToAdminDashboard}
         >
           <ArrowLeft size={22} color="#1E293B" />
         </TouchableOpacity>

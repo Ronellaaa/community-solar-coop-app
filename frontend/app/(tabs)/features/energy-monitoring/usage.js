@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import UsageChart from "../../../../components/energy-monitoring/usage-chart";
 import {
+  BackHandler,
   View,
   Text,
   StyleSheet,
@@ -8,9 +9,29 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 export default function UsageScreen() {
+  const router = useRouter();
+  const goToHouseholdDashboard = React.useCallback(
+    () => router.replace("/(tabs)/feature2"),
+    [router],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToHouseholdDashboard();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [goToHouseholdDashboard]),
+  );
+
   const [selectedPeriod, setSelectedPeriod] = useState("Daily");
 
   const usageData = {
@@ -67,7 +88,7 @@ export default function UsageScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={goToHouseholdDashboard}>
             <Text style={styles.backButton}>‹</Text>
           </TouchableOpacity>
 

@@ -2,6 +2,7 @@ import React from "react";
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -19,6 +20,7 @@ import {
   Trash2,
 } from "lucide-react-native";
 import {
+  useFocusEffect,
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
@@ -34,6 +36,27 @@ import { SHADOWS } from "../../../utils/shared-solar/shadows";
 
 export default function AdminSavingsRecords() {
   const router = useRouter();
+  const goToAdminDashboard = React.useCallback(
+    () =>
+      router.replace(
+        "/(tabs)/features/admin-shared-solar/AdminSharedSolarDashboard",
+      ),
+    [router],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToAdminDashboard();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [goToAdminDashboard]),
+  );
 
   const {
     projectId: paramProjectId,
@@ -273,7 +296,7 @@ export default function AdminSavingsRecords() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={goToAdminDashboard}
         >
           <ArrowLeft
             size={22}

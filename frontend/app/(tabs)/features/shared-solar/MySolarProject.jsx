@@ -2,6 +2,7 @@
 import React from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -19,7 +20,11 @@ import {
   Users,
   Zap,
 } from "lucide-react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 
 import {
   getSharedSolarProject,
@@ -30,7 +35,35 @@ import { SHADOWS } from "../../../utils/shared-solar/shadows";
 export default function MySolarProject() {
   const router = useRouter();
 
-  const { projectId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const projectId = Array.isArray(params.projectId)
+    ? params.projectId[0]
+    : params.projectId;
+  const goToProjectDetails = React.useCallback(() => {
+    if (projectId) {
+      router.replace({
+        pathname: "/(tabs)/features/shared-solar/ProjectDetails",
+        params: { projectId: String(projectId) },
+      });
+      return;
+    }
+
+    router.replace("/(tabs)/features/shared-solar/SharedSolarDashboard");
+  }, [projectId, router]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToProjectDetails();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [goToProjectDetails]),
+  );
 
   const [project, setProject] = React.useState(null);
   const [membership, setMembership] = React.useState(null);
@@ -112,7 +145,7 @@ export default function MySolarProject() {
 
         <TouchableOpacity
           style={styles.backButtonSimple}
-          onPress={() => router.back()}
+          onPress={goToProjectDetails}
         >
           <Text style={styles.backButtonSimpleText}>
             Go Back
@@ -131,7 +164,7 @@ export default function MySolarProject() {
 
         <TouchableOpacity
           style={styles.retryButton}
-          onPress={() => router.back()}
+          onPress={goToProjectDetails}
         >
           <Text style={styles.retryButtonText}>
             Go Back
@@ -181,7 +214,7 @@ export default function MySolarProject() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={goToProjectDetails}
           activeOpacity={0.7}
         >
           <ArrowLeft
@@ -814,4 +847,3 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
-

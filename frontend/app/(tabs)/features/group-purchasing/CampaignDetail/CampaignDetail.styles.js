@@ -11,6 +11,38 @@ export const campaignDetailStyles = StyleSheet.create({
   contentContainer: {
     paddingBottom: 30,
   },
+  completedCampaignBanner: {
+    alignItems: "center",
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 20,
+  },
+  completedIconWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#16A34A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  completedCampaignTitle: {
+    fontSize: 20,
+    fontFamily: "Nunito_700Bold",
+    fontWeight: "700",
+    color: "#166534",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  completedCampaignText: {
+    fontSize: 14,
+    fontFamily: "Nunito_400Regular",
+    color: "#3F5F4B",
+    lineHeight: 21,
+    textAlign: "center",
+  },
   heroContainer: {
     position: "relative",
     height: 240,
@@ -418,7 +450,7 @@ export const campaignDetailStyles = StyleSheet.create({
   },
 
   // ============================================================
-  // ✅ NEW STYLES FOR ORGANIZER ACTIONS
+  // ORGANIZER ACTIONS STYLES
   // ============================================================
 
   organizerBadge: {
@@ -445,10 +477,29 @@ export const campaignDetailStyles = StyleSheet.create({
     borderRadius: 12,
     gap: 4,
   },
+  markUnpaidButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EF4444",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
   markPaidText: {
     fontSize: 10,
     fontFamily: "Nunito_600SemiBold",
     color: "#FFFFFF",
+  },
+  selfPaidButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1A5C4A",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    ...SHADOWS.light,
   },
   organizerSectionHeader: {
     flexDirection: "row",
@@ -525,12 +576,52 @@ export const campaignDetailStyles = StyleSheet.create({
     color: "#EF4444",
   },
 
-  // app/(tabs)/features/group-purchasing/CampaignDetail/CampaignDetail.styles.js
+  // ============================================================
+  // AWAITING APPROVAL STYLES
+  // ============================================================
 
-  // Add these styles after the existing styles (around line 450, after the leaveButton styles)
+  awaitingApprovalBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#FFF7ED",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#F97316",
+  },
+  awaitingApprovalTitle: {
+    fontSize: 14,
+    fontFamily: "Nunito_700Bold",
+    color: "#F97316",
+    marginBottom: 2,
+  },
+  awaitingApprovalText: {
+    fontSize: 12,
+    fontFamily: "Nunito_400Regular",
+    color: "#92400E",
+    lineHeight: 16,
+  },
+  approveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#10B981",
+    paddingVertical: 14,
+    borderRadius: 100,
+    gap: 8,
+    ...SHADOWS.button,
+  },
+  approveButtonText: {
+    fontSize: 16,
+    fontFamily: "Nunito_700Bold",
+    color: "#FFFFFF",
+    letterSpacing: 0.3,
+  },
 
   // ============================================================
-  // ✅ MEMBER ACTIONS STYLES
+  // MEMBER ACTIONS STYLES
   // ============================================================
 
   memberSectionHeader: {
@@ -561,5 +652,126 @@ export const campaignDetailStyles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Nunito_600SemiBold",
     color: "#EF4444",
+  },
+
+  // ============================================================
+  // BANK DETAILS CARD STYLES
+  // ============================================================
+
+  bankHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 12,
+  },
+  bankIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#F0FDF4",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bankTitle: {
+    fontSize: 15,
+    fontFamily: "Nunito_700Bold",
+    color: "#1E293B",
+  },
+  bankSubtitle: {
+    fontSize: 12,
+    fontFamily: "Nunito_400Regular",
+    color: "#94A3B8",
+    marginTop: 2,
+  },
+  bankDivider: {
+    height: 1,
+    backgroundColor: "#F1F5F9",
+    marginBottom: 12,
+  },
+  bankRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  bankRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  bankLabel: {
+    fontSize: 13,
+    fontFamily: "Nunito_500Medium",
+    color: "#94A3B8",
+  },
+  bankValue: {
+    fontSize: 13,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#1E293B",
+    textAlign: "right",
+    flex: 1,
+    marginLeft: 12,
+  },
+  bankValueHighlight: {
+    color: "#1A5C4A",
+    fontFamily: "Nunito_700Bold",
+  },
+  bankAmountBox: {
+    backgroundColor: "#F0FDF4",
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+  },
+  bankAmountLabel: {
+    fontSize: 13,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#166534",
+  },
+  bankAmountValue: {
+    fontSize: 20,
+    fontFamily: "Nunito_700Bold",
+    color: "#1A5C4A",
+    letterSpacing: -0.3,
+  },
+  bankNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 12,
+    paddingHorizontal: 4,
+  },
+  bankNoteText: {
+    fontSize: 11,
+    fontFamily: "Nunito_400Regular",
+    color: "#94A3B8",
+    flex: 1,
+  },
+
+  // ============================================================
+  // ✅ NEW: CONTACT INSTALLER STYLES
+  // ============================================================
+
+  installerAvatarLarge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#3B82F6", // Blue to differentiate from organizer
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
+  callButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#3B82F6",
+    justifyContent: "center",
+    alignItems: "center",
+    ...SHADOWS.light,
   },
 });

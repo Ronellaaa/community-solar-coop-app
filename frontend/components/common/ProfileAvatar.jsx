@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { SHADOWS } from "../../app/utils/group-purchasing/shadows";
-import { LogOut, Users } from "lucide-react-native";
+import { LayoutDashboard, LogOut, Users } from "lucide-react-native";
 
 export const ProfileAvatar = ({
   size = 44,
@@ -25,7 +25,7 @@ export const ProfileAvatar = ({
 }) => {
   const router = useRouter();
   const { currentUser } = useAppContext();
-  const { signOut } = useAuth();
+  const { signOut, role } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
 
   // Get user initial
@@ -54,13 +54,6 @@ export const ProfileAvatar = ({
         Alert.alert("Error", "Failed to logout. Please try again.");
       }
     }
-  };
-
-  // Handle navigation to My Campaigns
-  const handleMyCampaigns = () => {
-    console.log("🔄 Navigating to My Campaigns");
-    setShowMenu(false);
-    router.push("/(tabs)/CampaignProfile");
   };
 
   // Handle press - show menu
@@ -118,14 +111,37 @@ export const ProfileAvatar = ({
                 </View>
                 <View style={styles.menuDivider} />
 
-                {/* ✅ NEW: My Campaigns Option */}
-                <TouchableOpacity
-                  style={styles.menuItem}
-                  onPress={handleMyCampaigns}
-                >
-                  <Users size={20} color="#1A5C4A" strokeWidth={2} />
-                  <Text style={styles.menuItemText}>My Campaigns</Text>
-                </TouchableOpacity>
+                {role === "admin" && (
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => {
+                      setShowMenu(false);
+                      router.push(
+                        "/(tabs)/features/admin-shared-solar/AdminSharedSolarDashboard",
+                      );
+                    }}
+                  >
+                    <LayoutDashboard
+                      size={20}
+                      color="#1A5C4A"
+                      strokeWidth={2}
+                    />
+                    <Text style={styles.menuItemText}>Admin Dashboard</Text>
+                  </TouchableOpacity>
+                )}
+
+                {role !== "installer" && role !== "admin" && (
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => {
+                      setShowMenu(false);
+                      router.push("/(tabs)/CampaignProfile");
+                    }}
+                  >
+                    <Users size={20} color="#1A5C4A" strokeWidth={2} />
+                    <Text style={styles.menuItemText}>My Campaigns</Text>
+                  </TouchableOpacity>
+                )}
 
                 <TouchableOpacity
                   style={[styles.menuItem, styles.menuItemLogout]}

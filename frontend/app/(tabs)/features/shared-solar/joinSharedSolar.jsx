@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,7 +19,11 @@ import {
   Zap,
 } from "lucide-react-native";
 
-import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 
 import {
   getSharedSolarProject,
@@ -31,7 +36,35 @@ import { SHADOWS } from "../../../utils/shared-solar/shadows";
 export default function JoinSharedSolar() {
   const router = useRouter();
 
-  const { projectId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const projectId = Array.isArray(params.projectId)
+    ? params.projectId[0]
+    : params.projectId;
+  const goToProjectDetails = React.useCallback(() => {
+    if (projectId) {
+      router.replace({
+        pathname: "/(tabs)/features/shared-solar/ProjectDetails",
+        params: { projectId: String(projectId) },
+      });
+      return;
+    }
+
+    router.replace("/(tabs)/features/shared-solar/SharedSolarDashboard");
+  }, [projectId, router]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToProjectDetails();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [goToProjectDetails]),
+  );
 
   const [project, setProject] = useState(null);
   const [existingRequest, setExistingRequest] =
@@ -140,7 +173,7 @@ export default function JoinSharedSolar() {
         [
           {
             text: "OK",
-            onPress: () => router.back(),
+            onPress: goToProjectDetails,
           },
         ]
       );
@@ -181,7 +214,7 @@ export default function JoinSharedSolar() {
 
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => router.back()}
+          onPress={goToProjectDetails}
         >
           <Text style={styles.primaryButtonText}>
             Go Back
@@ -207,7 +240,7 @@ export default function JoinSharedSolar() {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={goToProjectDetails}
           >
             <ArrowLeft
               size={22}
@@ -315,7 +348,7 @@ export default function JoinSharedSolar() {
 
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => router.back()}
+          onPress={goToProjectDetails}
         >
           <Text style={styles.primaryButtonText}>
             Back to Project
@@ -338,7 +371,7 @@ export default function JoinSharedSolar() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={goToProjectDetails}
         >
           <ArrowLeft
             size={22}

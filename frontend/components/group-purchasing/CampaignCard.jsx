@@ -13,9 +13,9 @@ export const CampaignCard = ({
   progress,
   isFull,
   onJoin,
-  onView, // ✅ Handler for viewing campaign
-  isOrganizer, // ✅ Flag for organizer
-  isMember, // ✅ NEW: Flag for member
+  onView,
+  isOrganizer,
+  isMember,
 }) => {
   // ✅ FIX: Use snake_case properties from database
   const statusColor = getStatusColor(campaign?.status || "active");
@@ -39,9 +39,17 @@ export const CampaignCard = ({
     campaign?.created_at || campaign?.createdAt || new Date().toISOString();
   const formattedDate = new Date(createdAt).toLocaleDateString();
 
+  // ✅ Status checks
   const isLocked = campaign?.status === "locked";
+  const isPaymentConfirmed = campaign?.status === "payment_confirmed";
+  const isAwaitingApproval = campaign?.status === "awaiting_approval";
   const isCompleted = campaign?.status === "completed";
-  const buttonDisabled = !isOrganizer && !isMember && (isLocked || isCompleted);
+
+  // ✅ Combined: any non-active status
+  const isInactive =
+    isLocked || isPaymentConfirmed || isAwaitingApproval || isCompleted;
+
+  const buttonDisabled = !isOrganizer && !isMember && isInactive;
 
   console.log("📌 CampaignCard rendered:", {
     campaignId: campaign?.id,
@@ -54,18 +62,19 @@ export const CampaignCard = ({
     buttonDisabled,
   });
 
-  // ✅ FIX: Show appropriate button text based on user role
+  // ✅ Show appropriate button text based on user role
   const getButtonText = () => {
-    //if (isLocked || isCompleted) return "Campaign Locked";
-    // ✅ If user is organizer OR member, show "View Campaign"
+    // Organizer OR member → always "View Campaign"
     if (isOrganizer || isMember) return "View Campaign";
-    if (isLocked || isCompleted) return "Campaign Locked";
-    if (campaignIsFull) return "Join Waitlist";
+
+    // Non-members: locked / payment confirmed / awaiting / completed / full → "Campaign Locked"
+    if (isInactive || campaignIsFull) return "Campaign Locked";
+
+    // Active + not full → "Join Campaign"
     return "Join Campaign";
   };
 
-  // ✅ FIX: Handle button press - different actions for organizer vs member
-  // ✅ FIX: Handle button press - different actions for organizer vs member
+  // ✅ Handle button press
   const handlePress = () => {
     console.log("🟢 Campaign button pressed:", {
       campaignId: campaign?.id,
@@ -75,19 +84,19 @@ export const CampaignCard = ({
       isMember,
     });
 
-    // ✅ FIRST: If user is organizer OR member, ALWAYS view campaign
-    // This overrides locked/completed status
+    // Organizer OR member → view campaign
     if (isOrganizer || isMember) {
       onView(campaign.id);
       return;
     }
 
-    // ✅ THEN: For non-members, check if locked/completed
-    if (isLocked || isCompleted) {
+    // Non-members + inactive → show alert (shouldn't happen since button disabled)
+    if (isInactive) {
       Alert.alert("Campaign Locked", "This campaign is no longer active.");
       return;
     }
 
+    // Non-members + full → show alert
     if (campaignIsFull) {
       Alert.alert(
         "Campaign Full",
@@ -96,16 +105,18 @@ export const CampaignCard = ({
       return;
     }
 
-    // ✅ Regular non-member: Join campaign
+    // Non-members + active + not full → join
     onJoin(campaign);
   };
 
   const getButtonStyle = () => {
-    //if (isLocked || isCompleted) return styles.joinButtonLocked;
-    // ✅ Blue style for both organizer AND member
+    // Blue for organizer AND member
     if (isOrganizer || isMember) return styles.viewButton;
-    if (isLocked || isCompleted) return styles.joinButtonLocked;
-    if (campaignIsFull) return styles.joinButtonDisabled;
+
+    // Orange locked style for inactive / full (non-members)
+    if (isInactive || campaignIsFull) return styles.joinButtonLocked;
+
+    // Green for active + not full (non-members)
     return styles.joinButton;
   };
 
@@ -241,7 +252,7 @@ const styles = StyleSheet.create({
     ...SHADOWS.button,
   },
   viewButton: {
-    backgroundColor: "#3498DB", // Blue
+    backgroundColor: "#3498DB",
     paddingVertical: 14,
     borderRadius: 100,
     alignItems: "center",

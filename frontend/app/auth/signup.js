@@ -20,18 +20,48 @@ export default function SignupScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // ✅ NEW: Account type toggle
+  const [accountType, setAccountType] = useState("community");
+
+  // ✅ NEW: Installer-specific fields
+  const [companyName, setCompanyName] = useState("");
+  const [yearsInBusiness, setYearsInBusiness] = useState("0-5");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
   const { signUp } = useAuth();
   const router = useRouter();
 
+  const isInstaller = accountType === "installer";
+
   const handleSignup = async () => {
-    // Validate required fields
-    if (!email || !password || !name) {
-      if (Platform.OS === "web") {
-        alert("Please fill in all required fields");
-      } else {
-        Alert.alert("Error", "Please fill in all required fields");
+    // ✅ Validate based on account type
+    if (isInstaller) {
+      if (!email || !password || !companyName) {
+        if (Platform.OS === "web") {
+          alert("Please fill in all required fields");
+        } else {
+          Alert.alert("Error", "Please fill in all required fields");
+        }
+        return;
       }
-      return;
+      if (!agreedToTerms) {
+        if (Platform.OS === "web") {
+          alert("Please agree to the Terms & Conditions");
+        } else {
+          Alert.alert("Error", "Please agree to the Terms & Conditions");
+        }
+        return;
+      }
+    } else {
+      if (!email || !password || !name) {
+        if (Platform.OS === "web") {
+          alert("Please fill in all required fields");
+        } else {
+          Alert.alert("Error", "Please fill in all required fields");
+        }
+        return;
+      }
     }
 
     // Validate email format
@@ -57,29 +87,40 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
-      // ✅ Pass phone number in userData
-      await signUp(email, password, {
-        name,
-        phone,
-        email,
-      });
+      // ✅ Build userData based on account type
+      const userData = isInstaller
+        ? {
+            name: companyName,
+            email,
+            phone,
+            userType: "installer",
+            companyName,
+            yearsInBusiness,
+          }
+        : {
+            name,
+            email,
+            phone,
+            userType: "community",
+          };
 
-      // ✅ Navigate to login after successful signup
+      await signUp(email, password, userData);
+
+      // ✅ Success message
+      const successMessage = isInstaller
+        ? "✅ Installer account created! Please check your email to confirm. Your account will be reviewed for approval."
+        : "✅ Account created! Please Login with your email address.";
+
       if (Platform.OS === "web") {
-        alert("✅ Account created! Please Login with your email address.");
-        // ✅ Navigate to login page
+        alert(successMessage);
         router.push("/auth/login");
       } else {
-        Alert.alert(
-          "Success!",
-          "Account created! Please Login with your email address.",
-          [
-            {
-              text: "OK",
-              onPress: () => router.push("/auth/login"),
-            },
-          ],
-        );
+        Alert.alert("Success!", successMessage, [
+          {
+            text: "OK",
+            onPress: () => router.push("/auth/login"),
+          },
+        ]);
       }
     } catch (error) {
       console.error("Signup error:", error);
@@ -104,42 +145,197 @@ export default function SignupScreen() {
         <Text style={styles.subtitle}>Join the Community!</Text>
       </View>
 
+      {/* ✅ Account Type Radio Toggle */}
+      <View style={styles.accountTypeContainer}>
+        <Text style={styles.accountTypeLabel}>I am a:</Text>
+        <View style={styles.radioGroup}>
+          {/* Community Member */}
+          <TouchableOpacity
+            style={[
+              styles.radioOption,
+              accountType === "community" && styles.radioOptionActive,
+            ]}
+            onPress={() => setAccountType("community")}
+            activeOpacity={0.7}
+            disabled={loading}
+          >
+            <View
+              style={[
+                styles.radioCircle,
+                accountType === "community" && styles.radioCircleActive,
+              ]}
+            >
+              {accountType === "community" && <View style={styles.radioDot} />}
+            </View>
+            <Text
+              style={[
+                styles.radioText,
+                accountType === "community" && styles.radioTextActive,
+              ]}
+            >
+              👥 Community
+            </Text>
+          </TouchableOpacity>
+
+          {/* Installer */}
+          <TouchableOpacity
+            style={[
+              styles.radioOption,
+              accountType === "installer" && styles.radioOptionActive,
+            ]}
+            onPress={() => setAccountType("installer")}
+            activeOpacity={0.7}
+            disabled={loading}
+          >
+            <View
+              style={[
+                styles.radioCircle,
+                accountType === "installer" && styles.radioCircleActive,
+              ]}
+            >
+              {accountType === "installer" && <View style={styles.radioDot} />}
+            </View>
+            <Text
+              style={[
+                styles.radioText,
+                accountType === "installer" && styles.radioTextActive,
+              ]}
+            >
+              🔧 Installer
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name *"
-          value={name}
-          onChangeText={setName}
-          editable={!loading}
-        />
+        {isInstaller ? (
+          <>
+            {/* ✅ Installer Fields */}
+            <TextInput
+              style={styles.input}
+              placeholder="Company Name *"
+              value={companyName}
+              onChangeText={setCompanyName}
+              editable={!loading}
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email *"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          editable={!loading}
-        />
+            <TextInput
+              style={styles.input}
+              placeholder="Business Email *"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!loading}
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          editable={!loading}
-        />
+            <TextInput
+              style={styles.input}
+              placeholder="Password (min 6 characters) *"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              editable={!loading}
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password (min 6 characters) *"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
+            <TextInput
+              style={styles.input}
+              placeholder="Company Phone Number"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              editable={!loading}
+            />
+
+            {/* Years in Business */}
+            <View style={styles.dropdownContainer}>
+              <Text style={styles.dropdownLabel}>Years in Business</Text>
+              <View style={styles.dropdownOptions}>
+                {["0-5", "5-10", "10-20", "20+"].map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={[
+                      styles.dropdownOption,
+                      yearsInBusiness === option && styles.dropdownOptionActive,
+                    ]}
+                    onPress={() => setYearsInBusiness(option)}
+                    disabled={loading}
+                  >
+                    <Text
+                      style={[
+                        styles.dropdownOptionText,
+                        yearsInBusiness === option &&
+                          styles.dropdownOptionTextActive,
+                      ]}
+                    >
+                      {option}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Terms & Conditions Checkbox */}
+            <TouchableOpacity
+              style={styles.checkboxRow}
+              onPress={() => setAgreedToTerms(!agreedToTerms)}
+              activeOpacity={0.7}
+              disabled={loading}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  agreedToTerms && styles.checkboxActive,
+                ]}
+              >
+                {agreedToTerms && <Text style={styles.checkboxTick}>✓</Text>}
+              </View>
+              <Text style={styles.checkboxText}>
+                I agree to the{" "}
+                <Text style={styles.checkboxLink}>Terms & Conditions</Text>
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            {/* ✅ Community Member Fields */}
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name *"
+              value={name}
+              onChangeText={setName}
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email *"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Password (min 6 characters) *"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              editable={!loading}
+            />
+          </>
+        )}
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -147,7 +343,11 @@ export default function SignupScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? "Creating account..." : "Sign Up"}
+            {loading
+              ? "Creating account..."
+              : isInstaller
+                ? "Sign Up as Installer"
+                : "Sign Up"}
           </Text>
         </TouchableOpacity>
 
@@ -177,7 +377,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 24,
   },
   title: {
     fontSize: 36,
@@ -191,6 +391,66 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontFamily: "Nunito_400Regular",
   },
+
+  // ✅ Account Type Selector
+  accountTypeContainer: {
+    marginBottom: 20,
+  },
+  accountTypeLabel: {
+    fontSize: 14,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#1E293B",
+    marginBottom: 10,
+  },
+  radioGroup: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  radioOption: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  radioOptionActive: {
+    borderColor: "#1A5C4A",
+    backgroundColor: "#F0FDF4",
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#94A3B8",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  radioCircleActive: {
+    borderColor: "#1A5C4A",
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#1A5C4A",
+  },
+  radioText: {
+    fontSize: 13,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#64748B",
+    flex: 1,
+  },
+  radioTextActive: {
+    color: "#1A5C4A",
+  },
+
+  // Form
   form: {
     gap: 14,
   },
@@ -203,6 +463,80 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     fontFamily: "Nunito_400Regular",
   },
+
+  // Years in Business Dropdown
+  dropdownContainer: {
+    gap: 8,
+  },
+  dropdownLabel: {
+    fontSize: 13,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#64748B",
+  },
+  dropdownOptions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  dropdownOption: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+  },
+  dropdownOptionActive: {
+    borderColor: "#1A5C4A",
+    backgroundColor: "#F0FDF4",
+  },
+  dropdownOptionText: {
+    fontSize: 12,
+    fontFamily: "Nunito_600SemiBold",
+    color: "#64748B",
+  },
+  dropdownOptionTextActive: {
+    color: "#1A5C4A",
+  },
+
+  // Terms Checkbox
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 4,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxActive: {
+    backgroundColor: "#1A5C4A",
+    borderColor: "#1A5C4A",
+  },
+  checkboxTick: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  checkboxText: {
+    fontSize: 13,
+    fontFamily: "Nunito_400Regular",
+    color: "#64748B",
+    flex: 1,
+  },
+  checkboxLink: {
+    color: "#1A5C4A",
+    fontFamily: "Nunito_600SemiBold",
+  },
+
+  // Button
   button: {
     backgroundColor: "#1A5C4A",
     paddingVertical: 16,

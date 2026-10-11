@@ -113,12 +113,12 @@ import { useAuth } from "../context/AuthContext";
 import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
 
 export default function IndexScreen() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
 
   // ==============================
   // CHECKING AUTHENTICATION
   // ==============================
-  if (loading) {
+  if (loading || (user && !role)) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1A5C4A" />
@@ -137,7 +137,15 @@ export default function IndexScreen() {
   // ==============================
   // USER IS LOGGED IN
   // ==============================
-  return <Redirect href="/(tabs)/home" />;
+  return (
+    <Redirect
+      href={
+        role === "admin"
+          ? "/(tabs)/features/admin-shared-solar/AdminSharedSolarDashboard"
+          : "/(tabs)/home"
+      }
+    />
+  );
 }
 
 const styles = StyleSheet.create({

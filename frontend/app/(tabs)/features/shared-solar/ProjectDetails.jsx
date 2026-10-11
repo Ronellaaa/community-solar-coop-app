@@ -1,6 +1,7 @@
 import React from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -19,13 +20,38 @@ import {
   Sun,
   TrendingUp,
 } from "lucide-react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 
 import { useSharedSolar } from "../../../../hooks/shared-solar/useSharedSolar";
 import { SHADOWS } from "../../../utils/shared-solar/shadows";
 
 export default function ProjectDetails() {
   const router = useRouter();
+  const goToProjectList = React.useCallback(
+    () =>
+      router.replace(
+        "/(tabs)/features/shared-solar/SharedSolarDashboard",
+      ),
+    [router],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          goToProjectList();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [goToProjectList]),
+  );
 
   const params = useLocalSearchParams();
 
@@ -138,7 +164,7 @@ export default function ProjectDetails() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={goToProjectList}
           style={styles.backButtonSimple}
         >
           <Text style={styles.backButtonSimpleText}>
@@ -166,7 +192,7 @@ export default function ProjectDetails() {
 
         <TouchableOpacity
           style={styles.retryButton}
-          onPress={() => router.back()}
+          onPress={goToProjectList}
         >
           <Text style={styles.retryButtonText}>
             Go Back
@@ -246,7 +272,7 @@ export default function ProjectDetails() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={goToProjectList}
           activeOpacity={0.7}
         >
           <ArrowLeft

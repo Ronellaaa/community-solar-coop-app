@@ -9,7 +9,9 @@ export const getStatusColor = (status) => {
     // Campaign statuses
     active: "#2ECC71", // Green
     locked: "#F39C12", // Orange
-    completed: "#3498DB", // Blue
+    payment_confirmed: "#3498DB", // Blue
+    awaiting_approval: "#F97316", // Orange-ish (NEW)
+    completed: "#9B59B6", // Purple
     cancelled: "#E74C3C", // Red
 
     // Member payment statuses
@@ -30,7 +32,9 @@ export const getStatusLabel = (status) => {
   const labelMap = {
     // Campaign statuses
     active: "Active",
-    locked: "Locked",
+    locked: "Awaiting Payment",
+    payment_confirmed: "Payment Confirmed",
+    awaiting_approval: "Awaiting Approval", // NEW
     completed: "Completed",
     cancelled: "Cancelled",
 
@@ -49,6 +53,8 @@ export const getStatusEmoji = (status) => {
   const emojiMap = {
     active: "🟢",
     locked: "🔒",
+    payment_confirmed: "💳",
+    awaiting_approval: "⏳", // NEW
     completed: "✅",
     cancelled: "❌",
     pending: "⏳",

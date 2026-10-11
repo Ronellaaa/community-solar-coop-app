@@ -18,9 +18,10 @@ export const useCampaigns = () => {
     confirmGroup,
     campaignMembers,
     markPaymentStatus,
+    approveCompletion, // ✅ ADD THIS
     currentUser,
     createCampaign: contextCreateCampaign,
-    deleteCampaign: contextDeleteCampaign, // ✅ ADD THIS
+    deleteCampaign: contextDeleteCampaign,
   } = useAppContext();
 
   const getCampaignsForDealWithDetails = async (dealId) => {
@@ -126,7 +127,7 @@ export const useCampaigns = () => {
     return true;
   };
 
-  // ✅ NEW: Delete campaign (for organizer when only member)
+  // ✅ Delete campaign (for organizer when only member)
   const deleteCampaign = async (campaignId, userId) => {
     console.log("🔄 deleteCampaign called with:", campaignId, userId);
     try {
@@ -135,6 +136,19 @@ export const useCampaigns = () => {
       return result;
     } catch (error) {
       console.error("❌ Error in deleteCampaign:", error);
+      throw error;
+    }
+  };
+
+  // ✅ NEW: Approve completion (organizer action)
+  const handleApproveCompletion = async (campaignId) => {
+    console.log("🔄 approveCompletion called with:", campaignId);
+    try {
+      const result = await approveCompletion(campaignId);
+      console.log("✅ approveCompletion completed successfully");
+      return result;
+    } catch (error) {
+      console.error("❌ Error in approveCompletion:", error);
       throw error;
     }
   };
@@ -153,9 +167,10 @@ export const useCampaigns = () => {
     getCampaignsJoinedByUser,
     joinCampaign: joinCampaignAsCurrentUser,
     leaveCampaign: leaveCampaignAsCurrentUser,
-    deleteCampaign, // ✅ ADD THIS
+    deleteCampaign,
     confirmGroup,
     markPaymentStatus,
+    approveCompletion: handleApproveCompletion, // ✅ ADD THIS
     currentUser,
     createCampaign,
   };

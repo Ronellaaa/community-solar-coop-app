@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
 
   // New role state
   const [role, setRole] = useState(null);
+  const [roleLoading, setRoleLoading] = useState(true);
 
   const [loading, setLoading] = useState(true);
 
@@ -25,39 +26,44 @@ export const AuthProvider = ({ children }) => {
   // LOAD USER ROLE
   // =====================================================
 
-  const loadUserRole = async (authUser) => {
-    if (!authUser) {
-      setRole(null);
-      return;
-    }
-
-    try {
-      const userRole =
-        await authService.getUserRole();
-
-      setRole(userRole || "user");
-
-      console.log(
-        "👤 User role:",
-        userRole
-      );
-    } catch (error) {
-      console.error(
-        "❌ Error loading user role:",
-        error
-      );
-
-      // Safe fallback
-      setRole("user");
-    }
-  };
-
   // =====================================================
   // INITIAL SESSION
   // =====================================================
 
   useEffect(() => {
     let mounted = true;
+    let roleRequestId = 0;
+
+    const loadUserRole = async (authUser) => {
+      const requestId = ++roleRequestId;
+
+      if (!authUser) {
+        setRole(null);
+        setRoleLoading(false);
+        return;
+      }
+
+      setRoleLoading(true);
+
+      try {
+        const userRole = await authService.getUserRole(authUser.id);
+
+        if (mounted && requestId === roleRequestId) {
+          setRole(userRole || "user");
+          console.log("👤 User role:", userRole);
+        }
+      } catch (error) {
+        console.error("❌ Error loading user role:", error);
+
+        if (mounted && requestId === roleRequestId) {
+          setRole(null);
+        }
+      } finally {
+        if (mounted && requestId === roleRequestId) {
+          setRoleLoading(false);
+        }
+      }
+    };
 
     const initializeAuth = async () => {
       try {
@@ -70,11 +76,7 @@ export const AuthProvider = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (session?.user) {
-          await loadUserRole(session.user);
-        } else {
-          setRole(null);
-        }
+        await loadUserRole(session?.user ?? null);
       } catch (error) {
         console.error(
           "❌ Auth initialization error:",
@@ -85,6 +87,7 @@ export const AuthProvider = ({ children }) => {
           setSession(null);
           setUser(null);
           setRole(null);
+          setRoleLoading(false);
         }
       } finally {
         if (mounted) {
@@ -102,16 +105,23 @@ export const AuthProvider = ({ children }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         if (!mounted) return;
 
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          await loadUserRole(session.user);
+          const authUser = session.user;
+          setRoleLoading(true);
+          setTimeout(() => {
+            if (mounted) {
+              loadUserRole(authUser);
+            }
+          }, 0);
         } else {
           setRole(null);
+          setRoleLoading(false);
         }
 
         setLoading(false);
@@ -190,7 +200,7 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
 
-    const userRole = await authService.getUserRole();
+    const userRole = await authService.getUserRole(currentUser.id);
 
     const finalRole = userRole || "user";
 
@@ -202,8 +212,8 @@ export const AuthProvider = ({ children }) => {
   } catch (error) {
     console.error("❌ Error refreshing role:", error);
 
-    setRole("user");
-    return "user";
+    setRole(null);
+    throw error;
   }
 };
   // =====================================================
@@ -216,6 +226,7 @@ export const AuthProvider = ({ children }) => {
 
     // New role information
     role,
+    roleLoading,
 
     // Convenient admin check
     isAdmin: role === "admin",
