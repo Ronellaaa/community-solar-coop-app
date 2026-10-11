@@ -72,7 +72,11 @@ export default function MyDealsScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() =>
+            router.replace(
+              "/(tabs)/features/group-purchasing/installer/InstallerDashboard",
+            )
+          }
         >
           <ArrowLeft size={22} color="#1E293B" strokeWidth={2.5} />
         </TouchableOpacity>

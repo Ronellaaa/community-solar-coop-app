@@ -69,6 +69,7 @@ export const authService = {
               logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.companyName || "Company")}&background=1A5C4A&color=fff&size=128`,
               rating: 0,
               years_in_business: yearsNumber,
+              phone: userData.phone?.trim() || null,
               is_verified: false,
             },
           ]);

@@ -187,23 +187,28 @@ const styles = StyleSheet.create({
   },
   modalCancelButton: {
     flex: 1,
-    paddingVertical: 12,
+    minHeight: 52,
+    paddingHorizontal: 8,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: "#E2E8F0",
     alignItems: "center",
+    justifyContent: "center",
   },
   modalCancelText: {
     fontSize: 16,
     fontFamily: "Nunito_600SemiBold",
     color: "#64748B",
+    textAlign: "center",
   },
   modalConfirmButton: {
     flex: 2,
+    minHeight: 52,
     backgroundColor: "#1A5C4A",
-    paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 100,
     alignItems: "center",
+    justifyContent: "center",
   },
   modalConfirmDisabled: {
     backgroundColor: "#94A3B8",
@@ -212,5 +217,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Nunito_600SemiBold",
     color: "#FFFFFF",
+    textAlign: "center",
+    flexShrink: 1,
   },
 });

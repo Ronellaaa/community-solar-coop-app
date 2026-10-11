@@ -1,6 +1,6 @@
 // frontend/app/(tabs)/features/group-purchasing/installer/PostDeal.jsx
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useAppContext } from "../../../../../context/AppContext";
 import { installerService } from "../../../../../services/group-purchasing/installerService";
@@ -48,6 +48,19 @@ export default function PostDealScreen() {
   const [uploading, setUploading] = useState(false);
 
   const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setTitle("");
+      setDescription("");
+      setCategory("panels");
+      setRegularPrice("");
+      setDiscountedPrice("");
+      setNeededNeighbors("5");
+      setDeadlineDays("14");
+      setImageUrl("");
+    }, []),
+  );
 
   // ============================================================
   // Helper: Alert for web + mobile
