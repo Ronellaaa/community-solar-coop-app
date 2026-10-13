@@ -796,31 +796,71 @@ export const updateProjectMember = async (
 // ADMIN
 // =====================================================
 
-export const getAllSavingsRecords = async (projectId = null) => {
-  let query = supabase
-    .from("shared_solar_savings")
-    .select("*")
-    .order("record_date", {
-      ascending: false,
-    });
 
+/**
+ * ADMIN - GET ALL SAVINGS RECORDS
+ *
+ * When projectId is supplied, retrieves records belonging
+ * to members of that project.
+ */
+export const getAllSavingsRecords = async (projectId = null) => {
   if (projectId) {
-    query = query.eq("project_id", projectId);
+    return getProjectSavingsRecords(projectId);
   }
 
-  const { data, error } = await query;
+  const { data, error } = await supabase
+    .from("shared_solar_savings")
+    .select("*")
+    .order("record_date", { ascending: false });
 
   if (error) {
-    console.error(
-      "Error loading all savings records:",
-      error
-    );
-
+    console.error("Error loading all savings records:", error);
     throw error;
   }
 
   return data || [];
 };
+
+/* ADMIN - GET SAVINGS RECORDS FOR A PROJECT
+ */
+export const getProjectSavingsRecords = async (projectId) => {
+  if (!projectId) {
+    return [];
+  }
+
+  const { data: members, error: membersError } = await supabase
+    .from("shared_solar_members")
+    .select("id")
+    .eq("project_id", projectId);
+
+  if (membersError) {
+    console.error(
+      "Error loading project members for savings records:",
+      membersError
+    );
+    throw membersError;
+  }
+
+  const memberIds = (members || []).map((member) => member.id);
+
+  if (memberIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("shared_solar_savings")
+    .select("*")
+    .in("member_id", memberIds)
+    .order("record_date", { ascending: false });
+
+  if (error) {
+    console.error("Error loading project savings records:", error);
+    throw error;
+  }
+
+  return data || [];
+};
+
 // =====================================================
 // ADMIN - ADD SAVINGS RECORD
 // =====================================================
