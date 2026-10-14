@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   ActivityIndicator,
@@ -8,11 +9,12 @@ import {
   View,
 } from "react-native";
 import { Bell, Sun } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 
 import SolarProjectCard from "../../../../components/shared-solar/SolarProjectCard";
 import { useSharedSolar } from "../../../../hooks/shared-solar/useSharedSolar";
 import { SHADOWS } from "../../../utils/shared-solar/shadows";
+import { supabase } from "../../../../lib/supabase";
 
 export default function SharedSolarDashboard() {
   const router = useRouter();
@@ -24,18 +26,99 @@ export default function SharedSolarDashboard() {
     refreshProjects,
   } = useSharedSolar();
 
-  // Navigate to project details
+  const [membershipProjectId, setMembershipProjectId] =
+    React.useState(null);
+
+  const [membershipChecked, setMembershipChecked] =
+    React.useState(false);
+
+  const [membershipError, setMembershipError] =
+    React.useState(null);
+
+  // Check whether the current user already belongs to a community.
+  const checkMembership = React.useCallback(async () => {
+    setMembershipChecked(false);
+    setMembershipError(null);
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        setMembershipProjectId(null);
+        return;
+      }
+
+      const { data, error: queryError } = await supabase
+        .from("shared_solar_members")
+        .select("project_id")
+        .eq("user_id", user.id)
+        .limit(1);
+
+      if (queryError) {
+        throw queryError;
+      }
+
+      setMembershipProjectId(data?.[0]?.project_id ?? null);
+    } catch (err) {
+      console.error("Error checking solar membership:", err);
+      setMembershipError(
+        "Unable to check your community membership. Please try again."
+      );
+    } finally {
+      setMembershipChecked(true);
+    }
+  }, []);
+
+  // Recheck membership whenever the dashboard becomes active.
+  useFocusEffect(
+    React.useCallback(() => {
+      checkMembership();
+    }, [checkMembership])
+  );
+
+  // Refresh both the projects and membership information.
+  const handleRefresh = React.useCallback(async () => {
+    await Promise.all([
+      refreshProjects(),
+      checkMembership(),
+    ]);
+  }, [refreshProjects, checkMembership]);
+
+  // Members see only their own project.
+  // Users who have not joined a community can see all projects.
+  const visibleProjects = React.useMemo(() => {
+    if (!membershipProjectId) {
+      return projects;
+    }
+
+    return projects.filter(
+      (project) =>
+        String(project.id) === String(membershipProjectId)
+    );
+  }, [projects, membershipProjectId]);
+
+  // Navigate to project details.
   const handleViewProject = (project) => {
     router.push({
       pathname: "/features/shared-solar/ProjectDetails",
       params: {
-        projectId: project.id,
+        projectId: String(project.id),
       },
     });
   };
 
-  // Loading state
-  if (loading && projects.length === 0) {
+  // Avoid showing all projects while membership is still being checked.
+  if (
+    loading ||
+    !membershipChecked
+  ) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator
@@ -50,7 +133,28 @@ export default function SharedSolarDashboard() {
     );
   }
 
-  // Error state
+  // Do not show the complete project list if membership could not be checked.
+  if (membershipError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>
+          Unable to check membership
+        </Text>
+
+        <Text style={styles.errorText}>
+          {membershipError}
+        </Text>
+
+        <Text
+          style={styles.retryText}
+          onPress={handleRefresh}
+        >
+          Tap here to try again
+        </Text>
+      </View>
+    );
+  }
+
   if (error && projects.length === 0) {
     return (
       <View style={styles.errorContainer}>
@@ -64,7 +168,7 @@ export default function SharedSolarDashboard() {
 
         <Text
           style={styles.retryText}
-          onPress={refreshProjects}
+          onPress={handleRefresh}
         >
           Tap here to try again
         </Text>
@@ -80,7 +184,7 @@ export default function SharedSolarDashboard() {
       refreshControl={
         <RefreshControl
           refreshing={loading}
-          onRefresh={refreshProjects}
+          onRefresh={handleRefresh}
           tintColor="#16A34A"
         />
       }
@@ -135,11 +239,15 @@ export default function SharedSolarDashboard() {
       {/* Section Header */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          Solar Projects
+          {membershipProjectId
+            ? "My Solar Community"
+            : "Solar Projects"}
         </Text>
 
         <Text style={styles.sectionSubtitle}>
-          Explore available community projects
+          {membershipProjectId
+            ? "View your community project and its details"
+            : "Explore available community projects"}
         </Text>
       </View>
 
@@ -153,7 +261,7 @@ export default function SharedSolarDashboard() {
       )}
 
       {/* Project Cards */}
-      {projects.map((project) => (
+      {visibleProjects.map((project) => (
         <SolarProjectCard
           key={project.id}
           project={project}
@@ -162,7 +270,7 @@ export default function SharedSolarDashboard() {
       ))}
 
       {/* Empty State */}
-      {projects.length === 0 && !loading && (
+      {visibleProjects.length === 0 && !loading && (
         <View style={styles.emptyState}>
           <View style={styles.emptyIcon}>
             <Sun
@@ -173,12 +281,15 @@ export default function SharedSolarDashboard() {
           </View>
 
           <Text style={styles.emptyTitle}>
-            No solar projects yet
+            {membershipProjectId
+              ? "Your project could not be found"
+              : "No solar projects yet"}
           </Text>
 
           <Text style={styles.emptySubtitle}>
-            Community solar projects will appear here
-            when they are created.
+            {membershipProjectId
+              ? "Your membership exists, but its project is not currently available. Please refresh or contact the administrator."
+              : "Community solar projects will appear here when they are created."}
           </Text>
         </View>
       )}
@@ -198,7 +309,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 
-  // Header
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -252,7 +362,6 @@ const styles = StyleSheet.create({
     borderColor: "#FFFFFF",
   },
 
-  // Overview
   overviewBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -295,7 +404,6 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
-  // Section
   sectionHeader: {
     paddingHorizontal: 20,
     marginTop: 28,
@@ -317,7 +425,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
-  // Empty state
   emptyState: {
     alignItems: "center",
     marginHorizontal: 20,
@@ -344,6 +451,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: "Nunito_700Bold",
     color: "#1E293B",
+    textAlign: "center",
   },
 
   emptySubtitle: {
@@ -355,7 +463,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // Errors
   loadingContainer: {
     flex: 1,
     backgroundColor: "#F8FAFC",
@@ -383,6 +490,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: "Nunito_700Bold",
     color: "#1E293B",
+    textAlign: "center",
   },
 
   errorText: {

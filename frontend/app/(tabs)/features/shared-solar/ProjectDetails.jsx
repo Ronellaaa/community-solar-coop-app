@@ -1,6 +1,7 @@
 import React from "react";
 import {
   ActivityIndicator,
+  Alert,
   BackHandler,
   RefreshControl,
   ScrollView,
@@ -26,6 +27,7 @@ import {
   useRouter,
 } from "expo-router";
 
+import { supabase } from "../../../../lib/supabase";
 import { useSharedSolar } from "../../../../hooks/shared-solar/useSharedSolar";
 import { SHADOWS } from "../../../utils/shared-solar/shadows";
 
@@ -73,18 +75,88 @@ export default function ProjectDetails() {
   // JOIN PROJECT
   // =====================================================
 
-  const handleJoinProject = () => {
-    if (!project?.id) {
+  
+   const handleJoinProject = async () => {
+  if (!project?.id) {
+    return;
+  }
+
+  try {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      throw userError;
+    }
+
+    if (!user) {
+      Alert.alert(
+        "Login Required",
+        "Please log in to join a solar community."
+      );
       return;
     }
 
+    // Check whether this user already belongs to any community.
+    const {
+      data: existingMembership,
+      error: membershipError,
+    } = await supabase
+      .from("shared_solar_members")
+      .select("id, project_id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (membershipError) {
+      throw membershipError;
+    }
+
+    if (
+      existingMembership &&
+      existingMembership.length > 0
+    ) {
+      const joinedProjectId =
+        existingMembership[0].project_id;
+
+      if (
+        String(joinedProjectId) === String(project.id)
+      ) {
+        Alert.alert(
+          "Already a Member",
+          "You are already a member of this solar community. You can view your project and savings."
+        );
+      } else {
+        Alert.alert(
+          "Already Joined a Community",
+          "You are already a member of another solar community. You can view your existing project and savings, but you cannot join another community."
+        );
+      }
+
+      return;
+    }
+
+    // Open the joining form only when the user has no membership.
     router.push({
       pathname: "/features/shared-solar/joinSharedSolar",
       params: {
         projectId: String(project.id),
       },
     });
-  };
+  } catch (error) {
+    console.error(
+      "Error checking community membership:",
+      error
+    );
+
+    Alert.alert(
+      "Unable to Check Membership",
+      "Please try again. Your joining form has not been opened."
+    );
+  }
+};
+
 
   // =====================================================
   // VIEW MY SAVINGS

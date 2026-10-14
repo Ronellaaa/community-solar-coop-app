@@ -111,6 +111,7 @@ export const getEnergyRecords = async (projectId) => {
 // GET MY SAVINGS HISTORY
 // =====================================================
 
+
 export const getMySavingsHistory = async (projectId) => {
   const user = await getCurrentUser();
 
@@ -118,48 +119,21 @@ export const getMySavingsHistory = async (projectId) => {
     return [];
   }
 
-  // Get the current user's membership
-  const { data: membership, error: membershipError } =
-    await supabase
-      .from("shared_solar_members")
-      .select("id")
-      .eq("project_id", projectId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-  if (membershipError) {
-    console.error(
-      "Error loading membership for savings:",
-      membershipError
-    );
-
-    throw membershipError;
-  }
-
-  if (!membership) {
-    return [];
-  }
-
-  // Get savings belonging to this membership
   const { data, error } = await supabase
     .from("shared_solar_savings")
     .select("*")
-    .eq("member_id", membership.id)
-    .order("record_date", {
-      ascending: false,
-    });
+    .eq("project_id", projectId)
+    .eq("user_id", user.id)
+    .order("record_date", { ascending: false });
 
   if (error) {
-    console.error(
-      "Error loading savings records:",
-      error
-    );
-
+    console.error("Error loading savings history:", error);
     throw error;
   }
 
   return data || [];
 };
+
 // =====================================================
 // USER - GET MY JOIN REQUEST
 // =====================================================
@@ -252,6 +226,26 @@ export const createJoinRequest = async ({
 
   if (existingMember) {
     throw new Error("You are already a member of this project.");
+  }
+
+  // Check whether the user already belongs to ANY community
+  const {
+      data: existingMembership,
+      error: membershipError,
+    } = await supabase
+      .from("shared_solar_members")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (membershipError) {
+      throw membershipError;
+    }
+
+    if (existingMembership && existingMembership.length > 0) {
+      throw new Error(
+        "You have already joined a community. You cannot join another community."
+      );
   }
 
   const { data: project, error: projectError } = await supabase
@@ -517,6 +511,30 @@ export const approveJoinRequest = async (requestId) => {
       "This user is already a member of this project."
     );
   }
+
+  // Prevent approval if the user already belongs to another community
+  const {
+      data: existingCommunityMembership,
+      error: existingCommunityError,
+    } = await supabase
+      .from("shared_solar_members")
+      .select("id, project_id")
+      .eq("user_id", request.user_id)
+      .neq("project_id", request.project_id)
+      .limit(1);
+
+    if (existingCommunityError) {
+      throw existingCommunityError;
+    }
+
+    if (
+      existingCommunityMembership &&
+      existingCommunityMembership.length > 0
+    ) {
+      throw new Error(
+        "This user already belongs to another community. The request cannot be approved."
+      );
+    }
 
   const { data: project, error: projectError } = await supabase
     .from("shared_solar_projects")
@@ -823,34 +841,16 @@ export const getAllSavingsRecords = async (projectId = null) => {
 
 /* ADMIN - GET SAVINGS RECORDS FOR A PROJECT
  */
+
 export const getProjectSavingsRecords = async (projectId) => {
   if (!projectId) {
-    return [];
-  }
-
-  const { data: members, error: membersError } = await supabase
-    .from("shared_solar_members")
-    .select("id")
-    .eq("project_id", projectId);
-
-  if (membersError) {
-    console.error(
-      "Error loading project members for savings records:",
-      membersError
-    );
-    throw membersError;
-  }
-
-  const memberIds = (members || []).map((member) => member.id);
-
-  if (memberIds.length === 0) {
     return [];
   }
 
   const { data, error } = await supabase
     .from("shared_solar_savings")
     .select("*")
-    .in("member_id", memberIds)
+    .eq("project_id", projectId)
     .order("record_date", { ascending: false });
 
   if (error) {
@@ -861,9 +861,11 @@ export const getProjectSavingsRecords = async (projectId) => {
   return data || [];
 };
 
+
 // =====================================================
 // ADMIN - ADD SAVINGS RECORD
 // =====================================================
+
 
 export const addSavingsRecord = async ({
   memberId,
@@ -890,10 +892,23 @@ export const addSavingsRecord = async ({
     throw new Error("Please enter a valid estimated saving.");
   }
 
+  // Get the selected membership.
+  const { data: member, error: memberError } = await supabase
+    .from("shared_solar_members")
+    .select("id, project_id, user_id, lifetime_saving")
+    .eq("id", memberId)
+    .single();
+
+  if (memberError) {
+    console.error("Error loading selected member:", memberError);
+    throw memberError;
+  }
+
   const { data, error } = await supabase
     .from("shared_solar_savings")
     .insert({
-      member_id: memberId,
+      project_id: member.project_id,
+      user_id: member.user_id,
       record_date: recordDate,
       energy_allocated_kwh: energy,
       estimated_saving: saving,
@@ -906,32 +921,25 @@ export const addSavingsRecord = async ({
     throw error;
   }
 
-  // Update member summary values
-  const { data: member, error: memberError } = await supabase
-    .from("shared_solar_members")
-    .select("estimated_bill_saving, lifetime_saving")
-    .eq("id", memberId)
-    .single();
-
-  if (memberError) {
-    throw memberError;
-  }
-
-  const newCurrentSaving = saving;
-
   const newLifetimeSaving =
     Number(member.lifetime_saving || 0) + saving;
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("shared_solar_members")
     .update({
-      estimated_bill_saving: newCurrentSaving,
+      estimated_bill_saving: saving,
       lifetime_saving: newLifetimeSaving,
     })
     .eq("id", memberId);
 
+  if (updateError) {
+    console.error("Error updating member savings:", updateError);
+    throw updateError;
+  }
+
   return data;
 };
+
 
 // =====================================================
 // ADMIN - UPDATE SAVINGS RECORD
